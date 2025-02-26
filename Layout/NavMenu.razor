@@ -1,4 +1,18 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
+﻿
+<MudNavMenu Class="text-white" Bordered="true">
+    <MudText Typo="Typo.h4" Class="px-4 py-2">HabitTracker</MudText>
+    <MudDivider Class="mt-1 mb-2" />
+    <MudNavLink Style="font-size: 1.2rem;" Icon="@Icons.Material.Filled.SpaceDashboard" Href="">Dashboard</MudNavLink>
+    <MudNavGroup Style="font-size: 1.2rem;" Icon="@Icons.Material.Filled.ViewList" Title="Tasks">
+        <MudNavLink Style="font-size: 1.2rem;" Href="tasks/daily">Daily</MudNavLink>
+        <MudNavLink Style="font-size: 1.2rem;" Href="tasks/weekly">Weekly</MudNavLink>
+        <MudNavLink Style="font-size: 1.2rem;" Href="tasks/monthly">Monthly</MudNavLink>
+    </MudNavGroup>
+    <MudNavLink Style="font-size: 1.2rem;" Icon="@Icons.Material.Filled.CalendarMonth" Href="calendar">Calendar View</MudNavLink>
+    <MudNavLink Style="font-size: 1.2rem;" Icon="@Icons.Material.Filled.PieChart" Href="data">Data</MudNavLink>
+</MudNavMenu>
+
+@* <div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="">HabitTracker</a>
         <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
@@ -15,18 +29,38 @@
             </NavLink>
         </div>
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Counter
+            <NavLink class="nav-link" href="tasks/daily">
+                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Daily
             </NavLink>
         </div>
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="weather">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Weather
+            <NavLink class="nav-link" href="tasks/weekly">
+                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Weekly
             </NavLink>
         </div>
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="settings">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Settings
+            <NavLink class="nav-link" href="tasks/monthly">
+                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Monthly
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="calendar">
+                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Calendar View
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="plan">
+                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Plan or Make a Habit
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="data">
+                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Data Page
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="tracker">
+                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Trackers
             </NavLink>
         </div>
     </nav>
@@ -41,4 +75,4 @@
     {
         collapseNavMenu = !collapseNavMenu;
     }
-}
+} *@

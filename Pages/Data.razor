@@ -1,0 +1,70 @@
+@page "/data"
+
+@inject HttpClient Http
+
+<PageTitle>Data</PageTitle>
+
+<div class="grid-container">
+    <div class="left-column">
+        <div>
+            <div class="data-header">
+                <h1>Daily Data - </h1>
+                <select>
+                    @foreach (var day in DaysOfWeek)
+                    {
+                        <option value="@day">@day</option>
+                    }
+                </select>
+            </div>
+            <div>
+                <p>Total: </p>
+                <p>Completed: </p>
+            </div>
+        </div>
+        <div>
+            <div class="data-header">
+                <h1>Weekly Data - </h1>
+                <select>
+                    @foreach (var day in DaysOfWeek)
+                    {
+                        <option value="@day">@day</option>
+                    }
+                </select>
+            </div>
+            <div>
+                <p>Total: </p>
+                <p>Completed: </p>
+            </div>
+        </div>
+        <div>
+            <div class="data-header">
+                <h1>Monthly Data - </h1>
+                <select>
+                    @foreach (var month in Months)
+                    {
+                        <option value="@month">@month</option>
+                    }
+                </select>
+            </div>
+            <div>
+                <p>Total: </p>
+                <p>Completed: </p>
+            </div>
+        </div>
+    </div>
+    <div class="right-column">
+        <p>Yearly Data</p>
+    </div>
+</div>
+
+@code {
+    private string[] DaysOfWeek = new string[]
+    {
+        "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
+    };
+
+    private string[] Months = new string[]
+    {
+        "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"
+    };
+}
