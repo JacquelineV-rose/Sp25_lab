@@ -1,0 +1,13 @@
+@page "/calendar"
+
+<h3>Calendar View</h3>
+<MudCard>
+    <MudCardContent>
+        <MudDatePicker PickerVariant="PickerVariant.Static" Date="@(DateTime.Today.AddDays(1))" />
+    </MudCardContent>
+</MudCard>
+
+@code {
+    private DateTime? selectedDate = DateTime.Today;
+    private DateTime startMonth = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
+}
