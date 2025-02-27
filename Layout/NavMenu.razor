@@ -1,15 +1,14 @@
-﻿
-<MudNavMenu Class="text-white" Bordered="true">
+﻿<MudNavMenu Class="text-white" Bordered="true">
     <MudText Typo="Typo.h4" Class="px-4 py-2">HabitTracker</MudText>
     <MudDivider Class="mt-1 mb-2" />
-    <MudNavLink Style="font-size: 1.2rem;" Icon="@Icons.Material.Filled.SpaceDashboard" Href="">Dashboard</MudNavLink>
+    <MudNavLink Style="font-size: 1.2rem;" Icon="@Icons.Material.Filled.SpaceDashboard" Href="/" Match="NavLinkMatch.All">Dashboard</MudNavLink>
     <MudNavGroup Style="font-size: 1.2rem;" Icon="@Icons.Material.Filled.ViewList" Title="Tasks">
-        <MudNavLink Style="font-size: 1.2rem;" Href="tasks/daily">Daily</MudNavLink>
-        <MudNavLink Style="font-size: 1.2rem;" Href="tasks/weekly">Weekly</MudNavLink>
-        <MudNavLink Style="font-size: 1.2rem;" Href="tasks/monthly">Monthly</MudNavLink>
+        <MudNavLink Style="font-size: 1.2rem;" Href="tasks/daily" Match="NavLinkMatch.Prefix">Daily</MudNavLink>
+        <MudNavLink Style="font-size: 1.2rem;" Href="tasks/weekly" Match="NavLinkMatch.Prefix">Weekly</MudNavLink>
+        <MudNavLink Style="font-size: 1.2rem;" Href="tasks/monthly" Match="NavLinkMatch.Prefix">Monthly</MudNavLink>
     </MudNavGroup>
-    <MudNavLink Style="font-size: 1.2rem;" Icon="@Icons.Material.Filled.CalendarMonth" Href="calendar">Calendar View</MudNavLink>
-    <MudNavLink Style="font-size: 1.2rem;" Icon="@Icons.Material.Filled.PieChart" Href="data">Data</MudNavLink>
+    <MudNavLink Style="font-size: 1.2rem;" Icon="@Icons.Material.Filled.CalendarMonth" Href="calendar" Match="NavLinkMatch.Prefix">Calendar View</MudNavLink>
+    <MudNavLink Style="font-size: 1.2rem;" Icon="@Icons.Material.Filled.PieChart" Href="data" Match="NavLinkMatch.Prefix">Data</MudNavLink>
 </MudNavMenu>
 
 @* <div class="top-row ps-3 navbar navbar-dark">
