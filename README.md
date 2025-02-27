@@ -1,2 +1,3 @@
 # Sp25_lab
-Habit tracker project
+Habit tracker project, 
+in development
