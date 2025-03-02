@@ -1,0 +1,8 @@
+CREATE DATABASE IF NOT EXISTS habittracker;
+USE habittracker;
+
+CREATE TABLE Users (
+    Id INT AUTO_INCREMENT PRIMARY KEY,
+    Username VARCHAR(255) NOT NULL,
+    Email VARCHAR(255) NOT NULL
+);
