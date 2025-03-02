@@ -1,0 +1,15 @@
+@page "/tasks/{type}"
+@inject HttpClient Http
+@using HabitTracker.Models  <!-- ✅ Import the User model -->
+
+<h3>@(type) Habits</h3>
+@code {
+    [Parameter] public string type { get; set; } = "Daily";
+
+    private List<Habit>? habits;
+
+    protected override async Task OnInitializedAsync()
+    {
+        habits = await Http.GetFromJsonAsync<List<Habit>>("http://localhost:5047/api/habits");
+    }
+}
