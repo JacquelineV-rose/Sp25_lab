@@ -12,5 +12,7 @@ namespace HabitTrackerAPI.Models
 
         [Required, EmailAddress]
         public string Email { get; set; }
+
+        public string? PasswordHash { get; set; }
     }
 }
