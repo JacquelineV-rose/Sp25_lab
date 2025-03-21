@@ -8,7 +8,7 @@ namespace HabitTracker.Models
         public string? Description { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
-        public string Frequency { get; set; }
+        public string Frequency { get; set; } = string.Empty;
         public bool Completed { get; set; }
     }
 }

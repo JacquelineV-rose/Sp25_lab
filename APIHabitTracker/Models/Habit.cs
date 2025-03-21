@@ -17,7 +17,7 @@ namespace HabitTrackerAPI.Models
         [Required]
         public DateTime EndDate { get; set; }
         [Required]
-        public string Frequency { get; set; }
+        public string Frequency { get; set; } = string.Empty;
         [Required]
         public bool Completed { get; set; }
     }
