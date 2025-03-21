@@ -1,0 +1,41 @@
+@page "/edithabits/create"
+
+<div class="create-habits">
+    <h2>Create Habits</h2>
+<div>
+
+<label>Habit Name:</label>
+    <input type="text" class="form-control" placeholder="Enter Habit Name" />
+</div>
+
+<div>
+<label>Description:</label>
+    <textarea id="description" class="form-control" placeholder="Enter Habit Description"></textarea>
+</div>
+
+<div>
+<label for="startDate">Start Date:</label>
+<input type="date" id="startDate" name="startDate" class="form-control"> 
+</div>
+
+<div>
+<label for="endDate">End Date:</label>
+<input type="date" id="endDate" name="endDate" class="form-control"> 
+</div>
+
+<div>
+    <label for="habitFrequency">How often do wish to repeat habit?:</label>
+    <select id="habitFrequency" name="habitFrequency" class="form-control">
+        <option value="daily">Daily</option>
+        <option value="weekly">Weekly</option>
+        <option value="monthly">Monthly</option>
+        <option value="never">Never</option>
+    </select>
+</div>
+
+<div>
+    <button class="btn btn-primary">Create Habit</button>
+</div>
+
+
+</div>
