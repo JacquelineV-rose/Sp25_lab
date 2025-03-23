@@ -9,7 +9,7 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var key = Encoding.UTF8.GetBytes("SuperSecretKey123!"); // 🔑 Change this in production!
+var key = Encoding.UTF8.GetBytes("ThisIsASuperSecretJwtKeyThatIsLongEnough!"); // 🔑 Change this in production!
 // ✅ Load Database Connection String
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
