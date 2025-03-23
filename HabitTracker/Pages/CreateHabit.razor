@@ -1,0 +1,94 @@
+@page "/edithabits/create"
+@inject HttpClient Http
+<link href="CreateHabit.razor.css" rel="stylesheet" />
+
+<div class="create-habits">
+<h3>Create Habit</h3>
+
+<EditForm Model="@newHabit" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div>
+        <label>Habit Name:</label>
+        <InputText @bind-Value="newHabit.Name" class="form-control" required />
+    </div>
+    
+    <div>
+        <label>Description:</label>
+        <InputTextArea @bind-Value="newHabit.Description" id="description" class="form-control" />
+    </div>
+
+    <div>
+        <label>Start Date:</label>
+        <InputDate @bind-Value="newHabit.StartDate" class="form-control" required />
+    </div>
+
+    <div>
+        <label>End Date:</label>
+        <InputDate @bind-Value="newHabit.EndDate" class="form-control" required />
+    </div>
+
+    <div>
+        <label>Frequency:</label>
+        <select @bind="newHabit.Frequency" class="form-control">
+            <option value="Daily">Daily</option>
+            <option value="Weekly">Weekly</option>
+            <option value="Monthly">Monthly</option>
+            <option value="Never">Never</option>
+        </select>
+    </div>
+
+    <button type="submit" class="btn-primary">Create Habit</button>
+</EditForm>
+</div>
+
+@if (!string.IsNullOrEmpty(message))
+{
+    <p>@message</p>
+}
+
+@code {
+    private Habit newHabit = new Habit 
+    { 
+        UserID = 1, //default user for right now
+        StartDate = DateTime.Today,
+        EndDate = DateTime.Today,
+        Frequency = "Daily"
+    }; 
+
+    private string message = "";
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            var response = await Http.PostAsJsonAsync("api/habits", newHabit);
+            if (response.IsSuccessStatusCode)
+            {
+                message = "Habit created successfully!";
+                newHabit = new Habit { UserID = 1 }; // Reset form
+            }
+            else
+            {
+                message = "Error creating habit.";
+            }
+        }
+        catch (Exception ex)
+        {
+            message = $"Request failed: {ex.Message}";
+        }
+    }
+
+    private class Habit
+    {
+        public int Id { get; set; }
+        public int UserID { get; set; }
+        public string Name { get; set; }
+        public string? Description { get; set; }
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
+        public string Frequency { get; set; } = string.Empty;
+        public bool Completed { get; set; }
+    }
+}

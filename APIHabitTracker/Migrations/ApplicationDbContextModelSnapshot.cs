@@ -34,7 +34,6 @@ namespace HabitTrackerAPI.Migrations
                         .HasColumnType("tinyint(1)");
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<DateTime>("EndDate")
@@ -44,8 +43,9 @@ namespace HabitTrackerAPI.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<int>("Name")
-                        .HasColumnType("int");
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("longtext");
 
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("datetime(6)");
@@ -56,6 +56,38 @@ namespace HabitTrackerAPI.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Habits");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Completed = false,
+                            EndDate = new DateTime(2025, 4, 2, 18, 15, 5, 29, DateTimeKind.Local).AddTicks(7340),
+                            Frequency = "Daily",
+                            Name = "Drink Water",
+                            StartDate = new DateTime(2025, 3, 3, 18, 15, 5, 29, DateTimeKind.Local).AddTicks(7290),
+                            UserID = 1
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Completed = false,
+                            EndDate = new DateTime(2025, 4, 2, 18, 15, 5, 29, DateTimeKind.Local).AddTicks(7350),
+                            Frequency = "Daily",
+                            Name = "Exercise",
+                            StartDate = new DateTime(2025, 3, 3, 18, 15, 5, 29, DateTimeKind.Local).AddTicks(7350),
+                            UserID = 1
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Completed = false,
+                            EndDate = new DateTime(2025, 4, 2, 18, 15, 5, 29, DateTimeKind.Local).AddTicks(7350),
+                            Frequency = "Daily",
+                            Name = "Make Bed",
+                            StartDate = new DateTime(2025, 3, 3, 18, 15, 5, 29, DateTimeKind.Local).AddTicks(7350),
+                            UserID = 1
+                        });
                 });
 
             modelBuilder.Entity("HabitTrackerAPI.Models.User", b =>

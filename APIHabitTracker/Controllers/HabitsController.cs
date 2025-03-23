@@ -17,9 +17,16 @@ namespace HabitTrackerAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Habit>>> GetHabits()
+        public async Task<ActionResult<IEnumerable<Habit>>> GetHabits([FromQuery] string? frequency)
         {
-            return await _context.Habits.ToListAsync();
+            var query = _context.Habits.AsQueryable();
+
+            if (!string.IsNullOrEmpty(frequency))
+            {
+                query = query.Where(h => h.Frequency == frequency);
+            }
+
+            return await query.ToListAsync();
         }
 
         [HttpPost]

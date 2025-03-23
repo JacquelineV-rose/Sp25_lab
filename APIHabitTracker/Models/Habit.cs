@@ -9,15 +9,15 @@ namespace HabitTrackerAPI.Models
         [Required]
         public int UserID { get; set; }
        [Required]
-        public int Name { get; set; }
+        public string Name { get; set; }
         
-        public string Description { get; set; }
+        public string? Description { get; set; }
         [Required]
         public DateTime StartDate { get; set; }
         [Required]
         public DateTime EndDate { get; set; }
         [Required]
-        public string Frequency { get; set; }
+        public string Frequency { get; set; } = string.Empty;
         [Required]
         public bool Completed { get; set; }
     }
