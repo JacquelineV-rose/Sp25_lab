@@ -52,14 +52,31 @@ button {
 
 .daily-section {
     background-color: rgb(234, 213, 252);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 .weekly-section {
     background-color: rgb(211, 230, 247);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 
 .monthly-section {
     background-color: rgb(209, 254, 244);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
+
+.daily-section > div:nth-child(3),
+.weekly-section > div:nth-child(3),
+.monthly-section > div:nth-child(3) {
+    flex-grow: 1;
+    overflow-y: auto;
+} 
+
 .habits-header h1 {
     margin-right: 3px; /* Space between the h1 and the rest */
 }
