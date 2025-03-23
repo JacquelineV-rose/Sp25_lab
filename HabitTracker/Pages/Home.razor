@@ -1,68 +1,122 @@
 ﻿@page "/"
+@inject HttpClient Http
 
-<PageTitle>Home</PageTitle>
-
-<h1>Dashboard</h1>
-
-Welcome to our Habit tracker!
-
+<h1>Welcome</h1>
 <div class="grid-container">
-
-
     <div class="left-column">
-        <div>
-            <div class="daily-section">
-                <div class="habits-header">
-                    <h1>Daily Habits </h1>
+        <div class="daily-section" style="display: flex; flex-direction: column; height: 100%;">
+            <div class="habits-header">
+                <h1>Daily Habits</h1>
+            </div>
+            @if (dailyHabits == null)
+            {
+                <p>Loading...</p>
+            }
+            else if (!dailyHabits.Any())
+            {
+                <p>No data available</p>
+            }
+            else
+            {
+                <div style="flex-grow: 1; overflow-y: auto;">
+                    @foreach (var habit in dailyHabits)
+                    {
+                        <div>@habit.Name - Completed: @(habit.Completed ? "Yes" : "No")</div>
+                    }
                 </div>
                 <div>
-                    <p>List of Habits: </p>
-                    <p>Total: </p>
-                    <p>Completed: </p>
+                    <strong>Total:</strong> @dailyHabits.Count |
+                    <strong>Completed:</strong> @dailyHabits.Count(h => h.Completed)
                 </div>
-            </div>
+            }
         </div>
-        <div>
-            <div class="weekly-section">
-                <div class="habits-header">
-                    <h1>Weekly Habits </h1>
+
+        <div class="weekly-section" style="display: flex; flex-direction: column; height: 100%;">
+            <div class="habits-header">
+                <h1>Weekly Habits</h1>
+            </div>
+            @if (weeklyHabits == null)
+            {
+                <p>Loading...</p>
+            }
+            else if (!weeklyHabits.Any())
+            {
+                <p>No data available</p>
+            }
+            else
+            {
+                <div style="flex-grow: 1; overflow-y: auto;">
+                    @foreach (var habit in weeklyHabits)
+                    {
+                        <div>@habit.Name - Completed: @(habit.Completed ? "Yes" : "No")</div>
+                    }
                 </div>
                 <div>
-                    <p>List of Habits: </p>
-                    <p>Total: </p>
-                    <p>Completed: </p>
+                    <strong>Total:</strong> @weeklyHabits.Count |
+                    <strong>Completed:</strong> @weeklyHabits.Count(h => h.Completed)
                 </div>
-            </div>
+            }
         </div>
-        <div>
-            <div class="monthly-section">
-                <div class="habits-header">
-                    <h1>Monthly Habits </h1>
+
+        <div class="monthly-section" style="display: flex; flex-direction: column; height: 100%;">
+            <div class="habits-header">
+                <h1>Monthly Habits</h1>
+            </div>
+            @if (monthlyHabits == null)
+            {
+                <p>Loading...</p>
+            }
+            else if (!monthlyHabits.Any())
+            {
+                <p>No data available</p>
+            }
+            else
+            {
+                <div style="flex-grow: 1; overflow-y: auto;">
+                    @foreach (var habit in monthlyHabits)
+                    {
+                        <div>@habit.Name - Completed: @(habit.Completed ? "Yes" : "No")</div>
+                    }
                 </div>
                 <div>
-                    <p>List of Habits: </p>
-                    <p>Total: </p>
-                    <p>Completed: </p>
+                    <strong>Total:</strong> @monthlyHabits.Count |
+                    <strong>Completed:</strong> @monthlyHabits.Count(h => h.Completed)
                 </div>
-            </div>
+            }
         </div>
     </div>
+
     <div class="right-column">
         <div class="motivation-section">
-            <div class="right-header">    
-                <h2>Motivational Quote</h2>
-            </div>
+            <h2>Motivation</h2>
+            <!-- Your existing motivation content -->
         </div>
+
         <div class="notes-section">
-            <div class="right-header">
-                <h1>Notes</h1>
-                <form>
-                    <textarea id="notes" name="notes" rows="15"></textarea>
-                    <button style="float: right;">Save</button>
-                </form>
-        
-            </div>
+            <h2>Notes</h2>
+            <!-- Your existing notes content -->
         </div>
     </div>
-
 </div>
+
+@code {
+    private List<HabitTracker.Models.Habit> allHabits = new();
+    private List<HabitTracker.Models.Habit> dailyHabits = new();
+    private List<HabitTracker.Models.Habit> weeklyHabits = new();
+    private List<HabitTracker.Models.Habit> monthlyHabits = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            allHabits = await Http.GetFromJsonAsync<List<HabitTracker.Models.Habit>>("api/habits") ?? new();
+            dailyHabits = allHabits.Where(h => h.Frequency == "Daily").ToList();
+            weeklyHabits = allHabits.Where(h => h.Frequency == "Weekly").ToList();
+            monthlyHabits = allHabits.Where(h => h.Frequency == "Monthly").ToList();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to fetch habits: {ex.Message}");
+        }
+    }
+}
