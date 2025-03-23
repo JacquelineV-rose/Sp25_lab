@@ -1,0 +1,62 @@
+@page "/edithabits/delete"
+@inject HttpClient Http
+@using HabitTracker.Models
+
+<h2 class="text-2xl font-bold mb-6">Delete a Habit</h2>
+
+<div class="max-w-2xl bg-white p-6 rounded shadow">
+    @if (habits == null)
+    {
+        <p>Loading habits...</p>
+    }
+    else if (!habits.Any())
+    {
+        <p>No habits found.</p>
+    }
+    else
+    {
+        <div class="max-h-64 overflow-y-auto border p-4 rounded shadow mb-4">
+            <ul class="space-y-2">
+                @foreach (var habit in habits)
+                {
+                    <li class="flex items-center space-x-4">
+                        <input type="radio" id="@habit.Id" name="habitSelect" value="@habit.Id"
+                               @onchange="() => selectedHabitId = habit.Id" />
+                        <label for="@habit.Id" class="cursor-pointer">
+                            <strong>@habit.Name</strong> - <span class="text-gray-600">@habit.Description</span>
+                        </label>
+                    </li>
+                }
+            </ul>
+        </div>
+
+        @* ✅ DELETE BUTTON inside the ELSE but before the closing brace *@
+        <button style="background-color:red; color:white; font-size:20px;"
+                @onclick="DeleteHabitConfirmed"
+                disabled="@(!IsHabitSelected)">
+            Delete Selected Habit
+        </button>
+    }  @* ✅ THIS closes the ELSE block cleanly — CRITICAL! *@
+</div>
+
+@code {
+    private List<Habit> habits;
+    private int selectedHabitId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        habits = await Http.GetFromJsonAsync<List<Habit>>("api/habits");
+    }
+
+    private bool IsHabitSelected => selectedHabitId > 0;
+
+    private async Task DeleteHabitConfirmed()
+    {
+        if (IsHabitSelected)
+        {
+            await Http.DeleteAsync($"api/habits/{selectedHabitId}");
+            habits = habits.Where(h => h.Id != selectedHabitId).ToList();
+            selectedHabitId = 0;
+        }
+    }
+}
