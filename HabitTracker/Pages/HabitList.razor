@@ -1,0 +1,69 @@
+@page "/habitlist"
+@inject HttpClient Http
+
+<h3>Habit List</h3>
+
+@if (habits == null)
+{
+    <p>Loading habits...</p>
+}
+else if (!habits.Any())
+{
+    <p>No habits found.</p>
+}
+else
+{
+    <table class="habit-table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Frequency</th>
+                <th>Completed</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var habit in habits)
+            {
+                <tr>
+                    <td>@habit.Name</td>
+                    <td>@habit.Description</td>
+                    <td>@habit.StartDate.ToShortDateString()</td>
+                    <td>@habit.EndDate.ToShortDateString()</td>
+                    <td>@habit.Frequency</td>
+                    <td>@(habit.Completed ? "✅" : "❌")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Habit>? habits;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            habits = await Http.GetFromJsonAsync<List<Habit>>("api/habits");
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error fetching habits: {ex.Message}");
+            habits = new List<Habit>();
+        }
+    }
+
+    private class Habit
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string? Description { get; set; }
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
+        public string Frequency { get; set; } = string.Empty;
+        public bool Completed { get; set; }
+    }
+}
