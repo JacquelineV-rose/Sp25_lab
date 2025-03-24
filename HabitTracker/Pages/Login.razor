@@ -48,7 +48,7 @@
             var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
 
             // Save token in sessionStorage
-            await JS.InvokeVoidAsync("sessionStorage.setItem", "authToken", result.Token);
+            await JS.InvokeVoidAsync("sessionStorage.setItem", "authToken", result?.Token);
 
             Message = "Login successful!";
             Navigation.NavigateTo("/tasks/Daily");
@@ -67,6 +67,6 @@
 
     public class LoginResponse
     {
-        public string Token { get; set; }
+        public string Token { get; set; } = string.Empty;
     }
 }
