@@ -1,5 +1,6 @@
 using HabitTrackerAPI.Data;
 using HabitTrackerAPI.Models;
+using HabitTrackerAPI.DTOs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -30,12 +31,26 @@ namespace HabitTrackerAPI.Controllers
             return await _context.Users.ToListAsync();
         }
 
-        // Register a new user with password hashing
         [HttpPost("register")]
-        public async Task<ActionResult<User>> RegisterUser(User user)
+        public async Task<ActionResult<User>> RegisterUser([FromBody] UserRegisterDto dto)
         {
-            // Hash the password before storing it
-            user.PasswordHash = HashPassword(user.PasswordHash);
+            if (string.IsNullOrWhiteSpace(dto.Password))
+                return BadRequest("Password cannot be empty.");
+
+            if (await _context.Users.AnyAsync(u => u.Username == dto.Username))
+                return BadRequest("Username already exists.");
+
+            if (await _context.Users.AnyAsync(u => u.Email == dto.Email))
+                return BadRequest("Email already in use.");
+
+            var hashedPassword = HashPassword(dto.Password);
+
+            var user = new User
+            {
+                Username = dto.Username,
+                PasswordHash = hashedPassword,
+                Email = dto.Email
+            };
 
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
@@ -78,18 +93,22 @@ namespace HabitTrackerAPI.Controllers
         // Generate JWT token for authentication
         private string GenerateJwtToken(User user)
         {
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+            var jwtKey = _configuration["Jwt:Key"] ?? "ThisIsASuperSecretJwtKeyThatIsLongEnough!"; // fallback
+            var jwtIssuer = _configuration["Jwt:Issuer"] ?? "default_issuer";
+            var jwtAudience = _configuration["Jwt:Audience"] ?? "default_audience";
+
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
             var claims = new[]
             {
-                new Claim(ClaimTypes.Name, user.Username),
-                new Claim("UserId", user.Id.ToString())
-            };
+            new Claim(ClaimTypes.Name, user.Username),
+            new Claim("UserId", user.Id.ToString())
+        };
 
             var token = new JwtSecurityToken(
-                _configuration["Jwt:Issuer"],
-                _configuration["Jwt:Audience"],
+                jwtIssuer,
+                jwtAudience,
                 claims,
                 expires: DateTime.UtcNow.AddHours(2),
                 signingCredentials: credentials
