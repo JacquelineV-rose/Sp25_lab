@@ -40,12 +40,12 @@
 </div>
 
 @code {
-    private List<Habit> habits;
+    private List<Habit> habits = new();
     private int selectedHabitId;
 
     protected override async Task OnInitializedAsync()
     {
-        habits = await Http.GetFromJsonAsync<List<Habit>>("api/habits");
+        habits = await Http.GetFromJsonAsync<List<Habit>>("api/habits") ?? new List<Habit>();
     }
 
     private bool IsHabitSelected => selectedHabitId > 0;
