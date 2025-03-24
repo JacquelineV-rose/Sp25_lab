@@ -68,12 +68,12 @@
 </div>
 
 @code {
-    private List<Habit> habits;
-    private Habit selectedHabit;
+    private List<Habit> habits = new();
+    private Habit? selectedHabit;
 
     protected override async Task OnInitializedAsync()
     {
-        habits = await Http.GetFromJsonAsync<List<Habit>>("api/habits");
+        habits = await Http.GetFromJsonAsync<List<Habit>>("api/habits") ?? new List<Habit>();
     }
 
     private void LoadHabitForEdit(Habit habit)
@@ -98,7 +98,7 @@
         if (selectedHabit != null)
         {
             await Http.PutAsJsonAsync($"api/habits/{selectedHabit.Id}", selectedHabit);
-            habits = await Http.GetFromJsonAsync<List<Habit>>("api/habits");
+            habits = await Http.GetFromJsonAsync<List<Habit>>("api/habits") ?? new List<Habit>();
             selectedHabit = null;
         }
     }
