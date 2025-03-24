@@ -1,12 +1,19 @@
 ﻿@page "/"
+@using MudBlazor
 @inject HttpClient Http
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
+@inject IDialogService DialogService
 
 <h1>Welcome</h1>
+
+<MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="@OpenCustomizeDialog">
+    🎨 Customize
+</MudButton>
+
 <div class="grid-container">
     <div class="left-column">
-        <div class="daily-section" style="display: flex; flex-direction: column; height: 100%;">
+        <div class="daily-section" style="background-color:@dailyColor;">
             <div class="habits-header">
                 <h1>Daily Habits</h1>
             </div>
@@ -33,7 +40,7 @@
             }
         </div>
 
-        <div class="weekly-section" style="display: flex; flex-direction: column; height: 100%;">
+        <div class="weekly-section" style="background-color:@weeklyColor;">
             <div class="habits-header">
                 <h1>Weekly Habits</h1>
             </div>
@@ -60,7 +67,7 @@
             }
         </div>
 
-        <div class="monthly-section" style="display: flex; flex-direction: column; height: 100%;">
+        <div class="monthly-section" style="background-color:@monthlyColor;">
             <div class="habits-header">
                 <h1>Monthly Habits</h1>
             </div>
@@ -89,17 +96,13 @@
     </div>
 
     <div class="right-column">
-        <div class="motivation-section">
+        <div class="motivation-section" style="background-color:@motivationColor; position: relative;">
             <h2>Motivation</h2>
             <p>@motivationQuote</p>
-            <button @onclick="ForceRefreshQuote" class="motivation-refresh-btn">
-                <img src="refresh.png" alt="Refresh" />
-            </button>
         </div>
 
-        <div class="notes-section">
+        <div class="notes-section" style="background-color:@notesColor;">
             <h2>Notes</h2>
-            <!-- Your existing notes content -->
         </div>
     </div>
 </div>
@@ -111,6 +114,13 @@
     private List<HabitTracker.Models.Habit> monthlyHabits = new();
 
     private string motivationQuote = "Loading motivation...";
+
+    // Section colors - default values
+    private string dailyColor = "rgb(234, 213, 252)";
+    private string weeklyColor = "rgb(211, 230, 247)";
+    private string monthlyColor = "rgb(209, 254, 244)";
+    private string motivationColor = "rgb(247, 208, 208)";
+    private string notesColor = "rgb(255, 222, 248)";
 
     protected override async Task OnInitializedAsync()
     {
@@ -137,7 +147,6 @@
     {
         try
         {
-            // ✅ Check localStorage for today's quote
             var storedQuote = await JS.InvokeAsync<string>("localStorage.getItem", "motivationQuote");
             var storedDate = await JS.InvokeAsync<string>("localStorage.getItem", "motivationDate");
             var today = DateTime.Now.ToString("yyyy-MM-dd");
@@ -156,7 +165,6 @@
                 var rng = new Random();
                 motivationQuote = quotes[rng.Next(quotes.Count)];
 
-                // ✅ Store quote and date in localStorage
                 await JS.InvokeVoidAsync("localStorage.setItem", "motivationQuote", motivationQuote);
                 await JS.InvokeVoidAsync("localStorage.setItem", "motivationDate", today);
             }
@@ -172,11 +180,37 @@
         }
     }
 
-    private async Task ForceRefreshQuote()
+    private async Task OpenCustomizeDialog()
     {
-        // ✅ Clear stored quote and force a new one
-        await JS.InvokeVoidAsync("localStorage.removeItem", "motivationQuote");
-        await JS.InvokeVoidAsync("localStorage.removeItem", "motivationDate");
-        await LoadMotivationQuote();
+        var parameters = new DialogParameters
+        {
+            { "DailyColor", dailyColor },
+            { "WeeklyColor", weeklyColor },
+            { "MonthlyColor", monthlyColor },
+            { "MotivationColor", motivationColor },
+            { "NotesColor", notesColor }
+        };
+
+        var options = new DialogOptions { MaxWidth = MaxWidth.Small, CloseButton = true, FullWidth = true };
+
+        //It says there is errors sometimes but it kinda works
+        var dialog = DialogService.Show<CustomizeDialog>("Customize Colors", parameters, options);
+        var result = await dialog.Result;
+
+        Console.WriteLine($"Dialog Data Type: {result.Data?.GetType()}");
+        Console.WriteLine($"Dialog Data Value: {result.Data}");
+
+        if (!result.Canceled && result.Data is Dictionary<string, string> updatedColors)
+        {
+            dailyColor = updatedColors.GetValueOrDefault("DailyColor", dailyColor);
+            weeklyColor = updatedColors.GetValueOrDefault("WeeklyColor", weeklyColor);
+            monthlyColor = updatedColors.GetValueOrDefault("MonthlyColor", monthlyColor);
+            motivationColor = updatedColors.GetValueOrDefault("MotivationColor", motivationColor);
+            notesColor = updatedColors.GetValueOrDefault("NotesColor", notesColor);
+        }
+        else
+        {
+            Console.WriteLine("Dialog was canceled or returned invalid data.");
+        }
     }
 }

@@ -1,0 +1,52 @@
+@using MudBlazor
+
+@code {
+    [CascadingParameter] IDialogReference DialogReference { get; set; }
+
+    [Parameter] public string DailyColor { get; set; }
+    [Parameter] public string WeeklyColor { get; set; }
+    [Parameter] public string MonthlyColor { get; set; }
+    [Parameter] public string MotivationColor { get; set; }
+    [Parameter] public string NotesColor { get; set; }
+
+    private void Submit()
+{
+    // Debugging each color value
+    Console.WriteLine($"DailyColor: {DailyColor}");
+    Console.WriteLine($"WeeklyColor: {WeeklyColor}");
+    Console.WriteLine($"MonthlyColor: {MonthlyColor}");
+    Console.WriteLine($"MotivationColor: {MotivationColor}");
+    Console.WriteLine($"NotesColor: {NotesColor}");
+
+    // Build the result dictionary
+    var result = new Dictionary<string, string>
+    {
+        { "DailyColor", DailyColor ?? "#ead5fc" },  // fallback to default if null
+        { "WeeklyColor", WeeklyColor ?? "#d3e6f7" },
+        { "MonthlyColor", MonthlyColor ?? "#d1fef4" },
+        { "MotivationColor", MotivationColor ?? "#f7d0d0" },
+        { "NotesColor", NotesColor ?? "#ffdef8" }
+    };
+
+    // ✅ Explicitly type DialogResult to avoid casting issues
+    DialogReference.Close(DialogResult.Ok<Dictionary<string, string>>(result));
+
+}
+
+}
+
+<MudDialog>
+    <DialogContent>
+        <MudText Typo="Typo.h6">Customize Section Colors</MudText>
+
+        <MudTextField @bind-Value="DailyColor" Label="Daily Section" InputType="InputType.Color" />
+        <MudTextField @bind-Value="WeeklyColor" Label="Weekly Section" InputType="InputType.Color" />
+        <MudTextField @bind-Value="MonthlyColor" Label="Monthly Section" InputType="InputType.Color" />
+        <MudTextField @bind-Value="MotivationColor" Label="Motivation Section" InputType="InputType.Color" />
+        <MudTextField @bind-Value="NotesColor" Label="Notes Section" InputType="InputType.Color" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Primary" OnClick="@Submit">Save</MudButton>
+        <MudButton Color="Color.Secondary" OnClick="@(() => DialogReference.Close())">Cancel</MudButton>
+    </DialogActions>
+</MudDialog>
