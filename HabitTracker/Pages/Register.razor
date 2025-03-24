@@ -1,25 +1,81 @@
 @page "/register"
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+@using HabitTracker.Models
 
-<div class="register-container">
-    <h2>Register</h2>
-<div>
-        
-<label>Create Username:</label>
-    <input type="text" placeholder="Enter username" class="form-control" />
-</div>
+<h2>Register</h2>
 
-    <div>
-        
+@if (!string.IsNullOrEmpty(Message))
+{
+    <p>@Message</p>
+}
 
-        
-<label>Create Password:</label>
-<input type="password" placeholder="Enter password" class="form-control" />
+<EditForm Model="@RegisterModel" OnValidSubmit="HandleRegister">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
 
-<label>Reenter Password:</label>
-<input type="password" placeholder="Reenter password" class="form-control" />
-</div>
-    <div>
-<button class="btn btn-primary">Create</button>
-    
+    <div class="register-container">
+        <div>
+            <label>Create Username:</label>
+            <InputText @bind-Value="RegisterModel.Username" class="form-control" placeholder="Enter username" />
+        </div>
+
+        <div>
+            <label>Enter Email:</label>
+            <InputText @bind-Value="RegisterModel.Email" type="email" class="form-control" placeholder="Enter email" />
+        </div>
+
+        <div>
+            <label>Create Password:</label>
+            <InputText @bind-Value="RegisterModel.Password" type="password" class="form-control"
+                placeholder="Enter password" />
+        </div>
+
+        <div>
+            <label>Reenter Password:</label>
+            <InputText @bind-Value="RegisterModel.ConfirmPassword" type="password" class="form-control"
+                placeholder="Reenter password" />
+        </div>
+
+        <div>
+            <button class="btn btn-primary" type="submit">Create</button>
+        </div>
     </div>
-</div>
+</EditForm>
+
+@code {
+    private UserRegisterModel RegisterModel = new();
+    private string ConfirmPassword;
+    private string Message;
+
+    private async Task HandleRegister()
+    {
+        if (RegisterModel.Password != RegisterModel.ConfirmPassword)
+        {
+            Message = "Passwords do not match.";
+            return;
+        }
+
+        try
+        {
+            var response = await Http.PostAsJsonAsync("http://localhost:5047/api/users/register", RegisterModel);
+
+            if (response.IsSuccessStatusCode)
+            {
+                Message = "Registration successful!";
+                await JS.InvokeVoidAsync("sessionStorage.setItem", "authToken", "");
+                Navigation.NavigateTo("/login");
+            }
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync(); // 👈 get full error
+                Message = $"Registration failed: {errorContent}";
+            }
+        }
+        catch (Exception ex)
+        {
+            Message = $"An error occurred: {ex.Message}";
+        }
+    }
+}
