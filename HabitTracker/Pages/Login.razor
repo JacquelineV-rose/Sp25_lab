@@ -51,7 +51,7 @@
             await JS.InvokeVoidAsync("sessionStorage.setItem", "authToken", result?.Token);
 
             Message = "Login successful!";
-            Navigation.NavigateTo("/tasks/Daily");
+            Navigation.NavigateTo("/habitlist");
         }
         else
         {
