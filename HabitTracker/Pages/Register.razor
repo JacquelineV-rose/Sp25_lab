@@ -46,8 +46,8 @@
 
 @code {
     private UserRegisterModel RegisterModel = new();
-    private string ConfirmPassword;
-    private string Message;
+    private string ConfirmPassword = string.Empty;
+    private string Message = string.Empty;
 
     private async Task HandleRegister()
     {

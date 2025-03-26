@@ -63,7 +63,7 @@ namespace HabitTrackerAPI.Controllers
         public async Task<ActionResult<string>> LoginUser([FromBody] LoginDto loginDto)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == loginDto.Username);
-            if (user == null || !VerifyPassword(loginDto.Password, user.PasswordHash))
+            if (user == null || !VerifyPassword(loginDto.Password, user.PasswordHash ?? string.Empty))
             {
                 return Unauthorized("Invalid username or password");
             }
@@ -74,17 +74,17 @@ namespace HabitTrackerAPI.Controllers
         }
 
         // Hash password using SHA256
-        private string HashPassword(string password)
+        private string HashPassword(string? password)
         {
             using (SHA256 sha256 = SHA256.Create())
             {
-                byte[] hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+                byte[] hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password ?? string.Empty));
                 return Convert.ToBase64String(hashedBytes);
             }
         }
 
         // Verify password against hash
-        private bool VerifyPassword(string password, string storedHash)
+        private bool VerifyPassword(string? password, string storedHash)
         {
             string hashedInput = HashPassword(password);
             return hashedInput == storedHash;
@@ -121,7 +121,7 @@ namespace HabitTrackerAPI.Controllers
     // DTO for login request
     public class LoginDto
     {
-        public string Username { get; set; }
-        public string Password { get; set; }
+        public string Username { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
     }
 }
