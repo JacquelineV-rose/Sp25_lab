@@ -1,4 +1,9 @@
-﻿<Router AppAssembly="@typeof(App).Assembly">
+﻿@inject NavigationManager Navigation
+@inject IJSRuntime JS
+@using HabitTracker.Pages
+@using HabitTracker.Models
+
+<Router AppAssembly="@typeof(App).Assembly">
     <Found Context="routeData">
         <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
         <FocusOnNavigate RouteData="@routeData" Selector="h1" />
@@ -10,3 +15,15 @@
         </LayoutView>
     </NotFound>
 </Router>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        var token = await JS.InvokeAsync<string>("sessionStorage.getItem", "authToken");
+
+        if (string.IsNullOrEmpty(token) && !Navigation.Uri.Contains("/LoginRegAuth/login"))
+        {
+            Navigation.NavigateTo("/LoginRegAuth/login");
+        }
+    }
+}
