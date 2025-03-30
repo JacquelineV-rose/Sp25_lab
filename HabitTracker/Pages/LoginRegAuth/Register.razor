@@ -1,4 +1,4 @@
-@page "/register"
+@page "/LoginRegAuth/register"
 @inject HttpClient Http
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
@@ -21,10 +21,7 @@
             <InputText @bind-Value="RegisterModel.Username" class="form-control" placeholder="Enter username" />
         </div>
 
-        <div>
-            <label>Enter Email:</label>
-            <InputText @bind-Value="RegisterModel.Email" type="email" class="form-control" placeholder="Enter email" />
-        </div>
+
 
         <div>
             <label>Create Password:</label>
