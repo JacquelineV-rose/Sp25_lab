@@ -2,11 +2,19 @@
     <MudText Typo="Typo.h4" Class="px-4 py-2">HabitTracker</MudText>
     <MudDivider Class="mt-1 mb-2" />
     <MudNavLink Style="font-size: 1.2rem;" Icon="@Icons.Material.Filled.SpaceDashboard" Href="/" Match="NavLinkMatch.All">Dashboard</MudNavLink>
-    <MudNavGroup Style="font-size: 1.2rem;" Icon="@Icons.Material.Filled.ViewList" Title="Habits">
-        <MudNavLink Style="font-size: 1.2rem;" Href="habits/daily" Match="NavLinkMatch.Prefix">Daily</MudNavLink>
-        <MudNavLink Style="font-size: 1.2rem;" Href="habits/weekly" Match="NavLinkMatch.Prefix">Weekly</MudNavLink>
-        <MudNavLink Style="font-size: 1.2rem;" Href="habits/monthly" Match="NavLinkMatch.Prefix">Monthly</MudNavLink>
-    </MudNavGroup>
+<MudNavLink 
+    Href="habitlist"
+    Match="NavLinkMatch.All"
+    Class="custom-nav-header"
+    Style="font-size: 1.2rem;"
+    Icon="@Icons.Material.Filled.ViewList">
+    Habits
+</MudNavLink>
+<div style="margin-left: 40px;">
+    <MudNavLink Style="font-size: 1.1rem;" Href="habitlist/daily" Match="NavLinkMatch.Prefix">Daily</MudNavLink>
+    <MudNavLink Style="font-size: 1.1rem;" Href="habitlist/weekly" Match="NavLinkMatch.Prefix">Weekly</MudNavLink>
+    <MudNavLink Style="font-size: 1.1rem;" Href="habitlist/monthly" Match="NavLinkMatch.Prefix">Monthly</MudNavLink>
+</div>
     <MudNavLink Style="font-size: 1.2rem;" Icon="@Icons.Material.Filled.CalendarMonth" Href="calendar" Match="NavLinkMatch.Prefix">Calendar View</MudNavLink>
     <MudNavLink Style="font-size: 1.2rem;" Icon="@Icons.Material.Filled.PieChart" Href="data" Match="NavLinkMatch.Prefix">Data</MudNavLink>
      
