@@ -2,6 +2,7 @@
 @inject HttpClient Http
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
+@using HabitTracker.Models
 
 <h1>Welcome</h1>
 <div class="grid-container">
@@ -99,23 +100,28 @@
 
         <div class="notes-section">
             <h2>Notes</h2>
-            <!-- Your existing notes content -->
+            <textarea @bind="noteContent" rows="8" class="form-control"></textarea>
+            <button @onclick="SaveNote" class="btn btn-success mt-2">Save</button>
+            <p>@saveStatus</p>
         </div>
     </div>
 </div>
 
 @code {
-    private List<HabitTracker.Models.Habit> allHabits = new();
-    private List<HabitTracker.Models.Habit> dailyHabits = new();
-    private List<HabitTracker.Models.Habit> weeklyHabits = new();
-    private List<HabitTracker.Models.Habit> monthlyHabits = new();
+    private List<Habit> allHabits = new();
+    private List<Habit> dailyHabits = new();
+    private List<Habit> weeklyHabits = new();
+    private List<Habit> monthlyHabits = new();
 
     private string motivationQuote = "Loading motivation...";
+    private string noteContent = "";
+    private string saveStatus = "";
 
     protected override async Task OnInitializedAsync()
     {
         await LoadHabits();
         await LoadMotivationQuote();
+        await LoadNote();
     }
 
     private async Task LoadHabits()
@@ -178,5 +184,31 @@
         await JS.InvokeVoidAsync("localStorage.removeItem", "motivationQuote");
         await JS.InvokeVoidAsync("localStorage.removeItem", "motivationDate");
         await LoadMotivationQuote();
+    }
+    private async Task LoadNote()
+    {
+        try
+        {
+            var note = await Http.GetFromJsonAsync<Note>("api/notes");
+            noteContent = note?.Content ?? "";
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Failed to load note: " + ex.Message);
+            noteContent = "";
+        }
+    }
+
+    private async Task SaveNote()
+    {
+        try
+        {
+            var response = await Http.PostAsJsonAsync("api/notes", new Note { Content = noteContent });
+            saveStatus = response.IsSuccessStatusCode ? "Note saved!" : "Failed to save.";
+        }
+        catch (Exception ex)
+        {
+            saveStatus = "Error: " + ex.Message;
+        }
     }
 }
