@@ -1,5 +1,4 @@
 
-
 .login-container {
     width: 300px;
     margin: 50px auto;
@@ -24,8 +23,33 @@
     border: none;
     padding: 10px;
     cursor: pointer;
+    width: 100%;
 }
 
 .btn-primary:hover {
     background-color: #5e85c1;
+}
+
+.btn-secondary {
+    background-color: #5e85c1;
+    color: white;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    width: 100%;
+}
+
+.btn-secondary:hover {
+    background-color: #2db2e3;
+}
+
+
+.button-container {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;  
+}
+
+.button-container button {
+    width: 48%; 
 }

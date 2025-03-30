@@ -1,5 +1,7 @@
 ﻿@page "/"
 @inject HttpClient Http
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
 
 <h1>Welcome</h1>
 <div class="grid-container">
@@ -89,7 +91,10 @@
     <div class="right-column">
         <div class="motivation-section">
             <h2>Motivation</h2>
-            <!-- Your existing motivation content -->
+            <p>@motivationQuote</p>
+            <button @onclick="ForceRefreshQuote" class="motivation-refresh-btn">
+                <img src="refresh.png" alt="Refresh" />
+            </button>
         </div>
 
         <div class="notes-section">
@@ -105,7 +110,15 @@
     private List<HabitTracker.Models.Habit> weeklyHabits = new();
     private List<HabitTracker.Models.Habit> monthlyHabits = new();
 
+    private string motivationQuote = "Loading motivation...";
+
     protected override async Task OnInitializedAsync()
+    {
+        await LoadHabits();
+        await LoadMotivationQuote();
+    }
+
+    private async Task LoadHabits()
     {
         try
         {
@@ -118,5 +131,52 @@
         {
             Console.WriteLine($"Failed to fetch habits: {ex.Message}");
         }
+    }
+
+    private async Task LoadMotivationQuote()
+    {
+        try
+        {
+            // ✅ Check localStorage for today's quote
+            var storedQuote = await JS.InvokeAsync<string>("localStorage.getItem", "motivationQuote");
+            var storedDate = await JS.InvokeAsync<string>("localStorage.getItem", "motivationDate");
+            var today = DateTime.Now.ToString("yyyy-MM-dd");
+
+            if (!string.IsNullOrEmpty(storedQuote) && storedDate == today)
+            {
+                motivationQuote = storedQuote;
+                return;
+            }
+
+            using var localHttp = new HttpClient { BaseAddress = new Uri(Navigation.BaseUri) };
+            var quotes = await localHttp.GetFromJsonAsync<List<string>>("quotes.json");
+
+            if (quotes != null && quotes.Any())
+            {
+                var rng = new Random();
+                motivationQuote = quotes[rng.Next(quotes.Count)];
+
+                // ✅ Store quote and date in localStorage
+                await JS.InvokeVoidAsync("localStorage.setItem", "motivationQuote", motivationQuote);
+                await JS.InvokeVoidAsync("localStorage.setItem", "motivationDate", today);
+            }
+            else
+            {
+                motivationQuote = "Stay motivated! No quotes available.";
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to load motivation quotes: {ex.Message}");
+            motivationQuote = "Stay motivated! (Error loading quotes)";
+        }
+    }
+
+    private async Task ForceRefreshQuote()
+    {
+        // ✅ Clear stored quote and force a new one
+        await JS.InvokeVoidAsync("localStorage.removeItem", "motivationQuote");
+        await JS.InvokeVoidAsync("localStorage.removeItem", "motivationDate");
+        await LoadMotivationQuote();
     }
 }

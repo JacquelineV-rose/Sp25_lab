@@ -39,6 +39,22 @@ button {
 
 .motivation-section {
     background-color: rgb(247, 208, 208);
+    position: relative;
+}
+
+.motivation-refresh-btn {
+    background: none;
+    border: none;
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    padding: 0;
+}
+
+.motivation-refresh-btn img {
+    width: 22px;
+    height: 22px;
+    cursor: pointer;
 }
 
 .notes-section {

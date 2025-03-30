@@ -1,4 +1,4 @@
-@page "/login"
+@page "/LoginRegAuth/login"
 
 @inject HttpClient Http
 @inject NavigationManager Navigation
@@ -8,7 +8,8 @@
 
 <div class="login-container">
     <h2>Login</h2>
-@if (!string.IsNullOrEmpty(Message))
+
+    @if (!string.IsNullOrEmpty(Message))
     {
         <p style="color: red;">@Message</p>
     }
@@ -27,8 +28,9 @@
             <InputText @bind-Value="LoginModel.Password" type="password" class="form-control" placeholder="Enter password" />
         </div>
 
-        <div>
+        <div class="button-container">
             <button class="btn btn-primary" type="submit">Login</button>
+            <button class="btn btn-secondary" type="button" @onclick="GoToRegister">Register</button>
         </div>
     </EditForm>
 </div>
@@ -38,32 +40,37 @@
     private string Message = "";
 
     private async Task HandleLogin()
-{
-    try
     {
-        var response = await Http.PostAsJsonAsync("http://localhost:5047/api/users/login", LoginModel);
-
-        if (response.IsSuccessStatusCode)
+        try
         {
-            var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
+            var response = await Http.PostAsJsonAsync("http://localhost:5047/api/users/login", LoginModel);
 
-            // Save token in sessionStorage
-            await JS.InvokeVoidAsync("sessionStorage.setItem", "authToken", result?.Token);
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
 
-            Message = "Login successful!";
-            Navigation.NavigateTo("/habitlist");
+             
+                await JS.InvokeVoidAsync("sessionStorage.setItem", "authToken", result?.Token);
+
+                Message = "Login successful!";
+                Navigation.NavigateTo("/habitlist");
+            }
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync(); // 👈 get full error
+                Message = $"Login failed: {errorContent}";
+            }
         }
-        else
+        catch (Exception ex)
         {
-            var errorContent = await response.Content.ReadAsStringAsync(); // 👈 get full error
-                Message = $"Registration failed: {errorContent}";
+            Message = $"Error: {ex.Message}";
         }
     }
-    catch (Exception ex)
+
+    private void GoToRegister()
     {
-        Message = $"Error: {ex.Message}";
+        Navigation.NavigateTo("/LoginRegAuth/register");
     }
-}
 
     public class LoginResponse
     {
