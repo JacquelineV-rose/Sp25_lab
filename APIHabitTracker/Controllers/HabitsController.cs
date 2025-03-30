@@ -35,7 +35,8 @@ namespace HabitTrackerAPI.Controllers
 
                 if (!string.IsNullOrEmpty(frequency))
                 {
-                    query = query.Where(h => h.Frequency == frequency);
+                   var normalized = frequency.ToLower();
+                    query = query.Where(h => h.Frequency.ToLower() == normalized); query = query.Where(h => h.Frequency == frequency);
                 }
 
                 return await query.ToListAsync();
