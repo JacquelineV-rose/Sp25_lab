@@ -1,8 +1,17 @@
 ﻿@inherits LayoutComponentBase
+@inject NavigationManager Navigation
+
+@code {
+    private bool IsLoginOrRegisterPage => Navigation.Uri.Contains("login") || Navigation.Uri.Contains("register");
+}
+
 <div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
+    @if (!IsLoginOrRegisterPage)
+    {
+        <div class="sidebar">
+            <NavMenu />
+        </div>
+    }
 
     <main>
         <div class="top-row px-4">
@@ -14,7 +23,6 @@
         </article>
     </main>
 </div>
-
 
 @* Required *@
 <MudThemeProvider />
