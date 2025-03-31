@@ -1,3 +1,4 @@
+@page "/habitlist/{type}"
 @page "/habitlist"
 @inject HttpClient Http
 @inject IJSRuntime JS
@@ -44,12 +45,14 @@ else
 
 @code {
     private List<Habit>? habits;
+    [Parameter] public string type { get; set; } = string.Empty;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnParametersSetAsync()
     {
         try
         {
             var token = await JS.InvokeAsync<string>("sessionStorage.getItem", "authToken");
+            HttpRequestMessage request;
             if (string.IsNullOrEmpty(token))
             {
                 Console.Error.WriteLine("No auth token found.");
@@ -57,7 +60,13 @@ else
                 return;
             }
 
-            var request = new HttpRequestMessage(HttpMethod.Get, "api/habits");
+            if (string.IsNullOrEmpty(type))
+            {
+                request = new HttpRequestMessage(HttpMethod.Get, "api/habits");
+            }
+            else {
+                request = new HttpRequestMessage(HttpMethod.Get, $"api/habits?frequency={type}");
+            }
             request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
             var response = await Http.SendAsync(request);
