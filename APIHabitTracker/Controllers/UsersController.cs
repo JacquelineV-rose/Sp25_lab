@@ -8,6 +8,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using System.ComponentModel.DataAnnotations;
 
 namespace HabitTrackerAPI.Controllers
 {
@@ -37,6 +38,14 @@ namespace HabitTrackerAPI.Controllers
             if (string.IsNullOrWhiteSpace(dto.Password))
                 return BadRequest("Password cannot be empty.");
 
+            var emailValidator = new EmailAddressAttribute();
+            if (!emailValidator.IsValid(dto.Email))
+                return BadRequest("Invalid email format.");
+
+            var domainPart = dto.Email?.Split('@').ElementAtOrDefault(1);
+            if (domainPart == null || !domainPart.Contains('.'))
+                return BadRequest("Email must contain a valid domain with a dot (e.g., .com, .org)");
+
             if (await _context.Users.AnyAsync(u => u.Username == dto.Username))
                 return BadRequest("Username already exists.");
 
@@ -60,7 +69,7 @@ namespace HabitTrackerAPI.Controllers
 
         // User login with JWT authentication
         [HttpPost("login")]
-        public async Task<ActionResult<string>> LoginUser([FromBody] LoginDto loginDto)
+        public async Task<ActionResult<string>> LoginUser([FromBody] UserLoginDto loginDto)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == loginDto.Username);
             if (user == null || !VerifyPassword(loginDto.Password, user.PasswordHash ?? string.Empty))
@@ -116,12 +125,5 @@ namespace HabitTrackerAPI.Controllers
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
-    }
-
-    // DTO for login request
-    public class LoginDto
-    {
-        public string Username { get; set; } = string.Empty;
-        public string Password { get; set; } = string.Empty;
     }
 }
