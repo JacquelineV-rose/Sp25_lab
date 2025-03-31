@@ -17,12 +17,11 @@
     <EditForm Model="@RegisterModel" OnValidSubmit="HandleRegister">
         <DataAnnotationsValidator />
         <ValidationSummary />
+<div>
+    <label>Enter Email:</label>
+    <InputText @bind-Value="RegisterModel.Email" type="email" class="form-control" placeholder="Enter email" />
+</div>
 
-        <div class="register-container">
-            <div>
-                <label>Email:</label>
-                <InputText @bind-Value="RegisterModel.Email" type="email" class="form-control" placeholder="Enter email" />
-            </div>
 
             <div>
                 <label>Create Username:</label>
@@ -69,8 +68,13 @@
                 Message = "Registration successful!";
                 await JS.InvokeVoidAsync("sessionStorage.setItem", "authToken", "");
                 Navigation.NavigateTo("/LoginRegAuth/login");
-            } else {
-                var errorContent = await response.Content.ReadAsStringAsync();
+else
+{
+    var errorContent = await response.Content.ReadAsStringAsync();
+    Console.Error.WriteLine($"Error: {errorContent}"); // or show it to the user as needed
+    Navigation.NavigateTo("/LoginRegAuth/login"); // redirect after showing the error
+}
+
                 Message = $"Registration failed: {errorContent}";
             }
         } catch (Exception ex) {
