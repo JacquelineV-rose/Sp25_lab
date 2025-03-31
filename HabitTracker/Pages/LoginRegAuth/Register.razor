@@ -3,80 +3,82 @@
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
 @using HabitTracker.Models
+@using HabitTracker.Loaders
+
+<LoadingScreen IsVisible="isLoading" />
 
 <h2>Register</h2>
 
-@if (!string.IsNullOrEmpty(Message))
-{
-    <p>@Message</p>
+@if (!isLoading) {
+    @if (!string.IsNullOrEmpty(Message)) {
+        <p>@Message</p>
+    }
+
+    <EditForm Model="@RegisterModel" OnValidSubmit="HandleRegister">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+<div>
+    <label>Enter Email:</label>
+    <InputText @bind-Value="RegisterModel.Email" type="email" class="form-control" placeholder="Enter email" />
+</div>
+
+
+            <div>
+                <label>Create Username:</label>
+                <InputText @bind-Value="RegisterModel.Username" class="form-control" placeholder="Enter username" />
+            </div>
+
+            <div>
+                <label>Create Password:</label>
+                <InputText @bind-Value="RegisterModel.Password" type="password" class="form-control" placeholder="Enter password" />
+            </div>
+
+            <div>
+                <label>Reenter Password:</label>
+                <InputText @bind-Value="RegisterModel.ConfirmPassword" type="password" class="form-control" placeholder="Reenter password" />
+            </div>
+
+            <div>
+                <button class="btn btn-primary" type="submit">Create</button>
+            </div>
+        </div>
+    </EditForm>
 }
-
-<EditForm Model="@RegisterModel" OnValidSubmit="HandleRegister">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
-
-    <div class="register-container">
-        <div>
-            <label>Create Username:</label>
-            <InputText @bind-Value="RegisterModel.Username" class="form-control" placeholder="Enter username" />
-        </div>
-
-    <div>
-            <label>Enter Email:</label>
-            <InputText @bind-Value="RegisterModel.Email" type="email" class="form-control"
-                placeholder="Enter email" />
-        </div>
-
-
-        <div>
-            <label>Create Password:</label>
-            <InputText @bind-Value="RegisterModel.Password" type="password" class="form-control"
-                placeholder="Enter password" />
-        </div>
-
-        <div>
-            <label>Reenter Password:</label>
-            <InputText @bind-Value="RegisterModel.ConfirmPassword" type="password" class="form-control"
-                placeholder="Reenter password" />
-        </div>
-
-        <div>
-            <button class="btn btn-primary" type="submit">Create</button>
-        </div>
-    </div>
-</EditForm>
 
 @code {
     private UserRegisterModel RegisterModel = new();
     private string ConfirmPassword = string.Empty;
     private string Message = string.Empty;
+    private bool isLoading = false;
 
-    private async Task HandleRegister()
-    {
-        if (RegisterModel.Password != RegisterModel.ConfirmPassword)
-        {
+    private async Task HandleRegister() {
+        if (RegisterModel.Password != RegisterModel.ConfirmPassword) {
             Message = "Passwords do not match.";
             return;
         }
 
-        try
-        {
+        try {
+            isLoading = true;
+
             var response = await Http.PostAsJsonAsync("http://localhost:5047/api/users/register", RegisterModel);
 
-            if (response.IsSuccessStatusCode)
-            {
+            isLoading = false;
+
+            if (response.IsSuccessStatusCode) {
                 Message = "Registration successful!";
                 await JS.InvokeVoidAsync("sessionStorage.setItem", "authToken", "");
                 Navigation.NavigateTo("/LoginRegAuth/login");
-            }
-            else
-            {
-                var errorContent = await response.Content.ReadAsStringAsync(); // 👈 get full error
+else
+{
+    var errorContent = await response.Content.ReadAsStringAsync();
+    Console.Error.WriteLine($"Error: {errorContent}"); // or show it to the user as needed
+    Navigation.NavigateTo("/LoginRegAuth/login"); // redirect after showing the error
+}
+
                 Message = $"Registration failed: {errorContent}";
             }
-        }
-        catch (Exception ex)
-        {
+        } catch (Exception ex) {
+            isLoading = false;
             Message = $"An error occurred: {ex.Message}";
         }
     }

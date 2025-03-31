@@ -1,0 +1,12 @@
+@namespace HabitTracker.Loaders
+
+<div class="loading-container" style="@(IsVisible ? "display: block;" : "display: none;")">
+    <div class="loader"></div>
+    <p>Loading...</p>
+</div>
+
+
+
+@code {
+    [Parameter] public bool IsVisible { get; set; }
+}

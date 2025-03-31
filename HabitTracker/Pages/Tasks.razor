@@ -1,16 +1,18 @@
 @page "/habits/{type}"
 @inject HttpClient Http
 @using HabitTracker.Models
+@using HabitTracker.Loaders
+
 
 <h3>@(type) Habits</h3>
 
-@if (habits == null)
+@if (isLoading)
 {
-    <p>Loading...</p>
+    <LoadingScreen IsVisible="isLoading" />
 }
-else if (habits.Count == 0)
+else if (habits == null || habits.Count == 0)
 {
-    <p>No users found.</p>
+    <p>No habits found.</p>
 }
 else
 {
@@ -37,11 +39,24 @@ else
 
 @code {
     [Parameter] public string type { get; set; } = string.Empty;
-
     private List<Habit>? habits;
+    private bool isLoading = true; 
 
     protected override async Task OnParametersSetAsync()
     {
-        habits = await Http.GetFromJsonAsync<List<Habit>>($"http://localhost:5047/api/habits?frequency={type}");
+        try
+        {
+            isLoading = true; 
+            habits = await Http.GetFromJsonAsync<List<Habit>>($"http://localhost:5047/api/habits?frequency={type}");
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error fetching habits: {ex.Message}");
+            habits = new List<Habit>();
+        }
+        finally
+        {
+            isLoading = false; 
+        }
     }
 }
