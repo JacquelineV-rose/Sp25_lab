@@ -47,11 +47,11 @@ else
 @code {
     private List<Habit>? habits;
     [Parameter] public string type { get; set; } = string.Empty;
-    private bool isLoading = true; // ✅ Added loading state
+    private bool isLoading = true; 
 
     protected override async Task OnParametersSetAsync()
     {
-        isLoading = true; // ✅ Show loading screen
+        isLoading = true;
 
         try
         {
@@ -87,7 +87,7 @@ else
         }
         finally
         {
-            isLoading = false; // ✅ Hide loading screen when done
+            isLoading = false; 
         }
     }
 }
