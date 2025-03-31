@@ -1,10 +1,11 @@
 @page "/LoginRegAuth/login"
-
 @inject HttpClient Http
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
 @using System.Net.Http.Json
 @using HabitTracker.Models
+
+
 
 <div class="login-container">
     <h2>Login</h2>
@@ -53,7 +54,7 @@
                 await JS.InvokeVoidAsync("sessionStorage.setItem", "authToken", result?.Token);
 
                 Message = "Login successful!";
-                Navigation.NavigateTo("/habitlist");
+                Navigation.NavigateTo("/");
             }
             else
             {
