@@ -1,5 +1,6 @@
 @page "/edithabits/edit"
 @inject HttpClient Http
+@inject IJSRuntime JS
 @using HabitTracker.Models
 
 <h2 class="text-2xl font-bold mb-6">Edit a Habit</h2>
@@ -72,9 +73,29 @@
     private Habit? selectedHabit;
 
     protected override async Task OnInitializedAsync()
+{
+    var token = await JS.InvokeAsync<string>("sessionStorage.getItem", "authToken");
+    if (string.IsNullOrEmpty(token))
     {
-        habits = await Http.GetFromJsonAsync<List<Habit>>("api/habits") ?? new List<Habit>();
+        Console.Error.WriteLine("No auth token found.");
+        habits = new List<Habit>();
+        return;
     }
+
+    var request = new HttpRequestMessage(HttpMethod.Get, "api/habits");
+    request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+    var response = await Http.SendAsync(request);
+    if (response.IsSuccessStatusCode)
+    {
+        habits = await response.Content.ReadFromJsonAsync<List<Habit>>() ?? new List<Habit>();
+    }
+    else
+    {
+        Console.Error.WriteLine($"Failed to load habits: {response.StatusCode}");
+        habits = new List<Habit>();
+    }
+}
 
     private void LoadHabitForEdit(Habit habit)
     {
@@ -94,12 +115,27 @@
     private bool IsHabitSelected => selectedHabit != null;
 
     private async Task SaveHabit()
+{
+    if (selectedHabit != null)
     {
-        if (selectedHabit != null)
+        var token = await JS.InvokeAsync<string>("sessionStorage.getItem", "authToken");
+        var request = new HttpRequestMessage(HttpMethod.Put, $"api/habits/{selectedHabit.Id}")
         {
-            await Http.PutAsJsonAsync($"api/habits/{selectedHabit.Id}", selectedHabit);
-            habits = await Http.GetFromJsonAsync<List<Habit>>("api/habits") ?? new List<Habit>();
+            Content = JsonContent.Create(selectedHabit)
+        };
+        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+        var response = await Http.SendAsync(request);
+        if (response.IsSuccessStatusCode)
+        {
+            // Refresh habit list
+            await OnInitializedAsync();
             selectedHabit = null;
         }
+        else
+        {
+            Console.Error.WriteLine($"Failed to save habit: {response.StatusCode}");
+        }
     }
+}
 }

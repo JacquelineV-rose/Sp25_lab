@@ -2,7 +2,7 @@
 @inject HttpClient Http
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
-@using HabitTracker.Models
+@using HabitTracker.Models;
 
 <h1>Welcome</h1>
 <div class="grid-container">
@@ -100,7 +100,7 @@
 
         <div class="notes-section">
             <h2>Notes</h2>
-            <textarea @bind="noteContent" rows="8" class="form-control"></textarea>
+                        <textarea @bind="noteContent" rows="8" class="form-control"></textarea>
             <button @onclick="SaveNote" class="btn btn-success mt-2">Save</button>
             <p>@saveStatus</p>
         </div>
@@ -113,9 +113,10 @@
     private List<Habit> weeklyHabits = new();
     private List<Habit> monthlyHabits = new();
 
-    private string motivationQuote = "Loading motivation...";
     private string noteContent = "";
     private string saveStatus = "";
+
+    private string motivationQuote = "Loading motivation...";
 
     protected override async Task OnInitializedAsync()
     {
@@ -125,19 +126,37 @@
     }
 
     private async Task LoadHabits()
+{
+    try
     {
-        try
+        var token = await JS.InvokeAsync<string>("sessionStorage.getItem", "authToken");
+        if (string.IsNullOrEmpty(token))
         {
-            allHabits = await Http.GetFromJsonAsync<List<HabitTracker.Models.Habit>>("api/habits") ?? new();
+            Console.Error.WriteLine("No auth token found.");
+            return;
+        }
+
+        var request = new HttpRequestMessage(HttpMethod.Get, "api/habits");
+        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+        var response = await Http.SendAsync(request);
+        if (response.IsSuccessStatusCode)
+        {
+            allHabits = await response.Content.ReadFromJsonAsync<List<Habit>>() ?? new();
             dailyHabits = allHabits.Where(h => h.Frequency == "Daily").ToList();
             weeklyHabits = allHabits.Where(h => h.Frequency == "Weekly").ToList();
             monthlyHabits = allHabits.Where(h => h.Frequency == "Monthly").ToList();
         }
-        catch (Exception ex)
+        else
         {
-            Console.WriteLine($"Failed to fetch habits: {ex.Message}");
+            Console.Error.WriteLine($"Failed to load habits: {response.StatusCode}");
         }
     }
+    catch (Exception ex)
+    {
+        Console.Error.WriteLine($"Error fetching habits: {ex.Message}");
+    }
+}
 
     private async Task LoadMotivationQuote()
     {
@@ -185,7 +204,8 @@
         await JS.InvokeVoidAsync("localStorage.removeItem", "motivationDate");
         await LoadMotivationQuote();
     }
-    private async Task LoadNote()
+
+      private async Task LoadNote()
     {
         try
         {
