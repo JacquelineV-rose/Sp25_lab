@@ -1,15 +1,16 @@
 @page "/edithabits/delete"
 @inject HttpClient Http
 @using HabitTracker.Models
+@using HabitTracker.Loaders
 
 <h2 class="text-2xl font-bold mb-6">Delete a Habit</h2>
 
 <div class="max-w-2xl bg-white p-6 rounded shadow">
-    @if (habits == null)
+    @if (isLoading)
     {
-        <p>Loading habits...</p>
+        <LoadingScreen IsVisible="isLoading" />
     }
-    else if (!habits.Any())
+    else if (habits == null || !habits.Any())
     {
         <p>No habits found.</p>
     }
@@ -31,21 +32,24 @@
         </div>
 
         @* ✅ DELETE BUTTON inside the ELSE but before the closing brace *@
-        <button style="background-color:red; color:white; font-size:20px;"
+        <button style="background-color:red; color:white; font-size:20px; width:100%; margin-top:20px;"
                 @onclick="DeleteHabitConfirmed"
-                disabled="@(!IsHabitSelected)">
+                disabled="@(!IsHabitSelected || isLoading)">
             Delete Selected Habit
         </button>
-    }  @* ✅ THIS closes the ELSE block cleanly — CRITICAL! *@
+    }  @* ✅ THIS closes the ELSE block cleanly *@
 </div>
 
 @code {
     private List<Habit> habits = new();
     private int selectedHabitId;
+    private bool isLoading = true;
 
     protected override async Task OnInitializedAsync()
     {
+        isLoading = true; 
         habits = await Http.GetFromJsonAsync<List<Habit>>("api/habits") ?? new List<Habit>();
+        isLoading = false; 
     }
 
     private bool IsHabitSelected => selectedHabitId > 0;
@@ -54,9 +58,11 @@
     {
         if (IsHabitSelected)
         {
+            isLoading = true; 
             await Http.DeleteAsync($"api/habits/{selectedHabitId}");
             habits = habits.Where(h => h.Id != selectedHabitId).ToList();
             selectedHabitId = 0;
+            isLoading = false; 
         }
     }
 }

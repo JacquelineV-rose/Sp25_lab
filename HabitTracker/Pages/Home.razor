@@ -3,8 +3,13 @@
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
 @using HabitTracker.Models
+@using HabitTracker.Loaders
 
 <h1>Welcome</h1>
+
+
+<LoadingScreen IsVisible="@isLoading" />
+
 <div class="grid-container">
     <div class="left-column">
         <div class="daily-section" style="display: flex; flex-direction: column; height: 100%;">
@@ -108,6 +113,8 @@
 </div>
 
 @code {
+
+
     private List<Habit> allHabits = new();
     private List<Habit> dailyHabits = new();
     private List<Habit> weeklyHabits = new();
@@ -116,18 +123,25 @@
     private string motivationQuote = "Loading motivation...";
     private string noteContent = "";
     private string saveStatus = "";
+    private bool isLoading = false; 
 
     protected override async Task OnInitializedAsync()
     {
+        isLoading = true; 
+
         await LoadHabits();
         await LoadMotivationQuote();
         await LoadNote();
+
+        isLoading = false;
     }
 
     private async Task LoadHabits()
     {
+
         try
         {
+
             allHabits = await Http.GetFromJsonAsync<List<HabitTracker.Models.Habit>>("api/habits") ?? new();
             dailyHabits = allHabits.Where(h => h.Frequency == "Daily").ToList();
             weeklyHabits = allHabits.Where(h => h.Frequency == "Weekly").ToList();
@@ -185,6 +199,7 @@
         await JS.InvokeVoidAsync("localStorage.removeItem", "motivationDate");
         await LoadMotivationQuote();
     }
+
     private async Task LoadNote()
     {
         try
