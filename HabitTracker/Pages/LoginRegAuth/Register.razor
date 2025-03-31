@@ -69,7 +69,7 @@
             {
                 Message = "Registration successful!";
                 await JS.InvokeVoidAsync("sessionStorage.setItem", "authToken", "");
-                Navigation.NavigateTo("/login");
+                Navigation.NavigateTo("/LoginRegAuth/login");
             }
             else
             {
