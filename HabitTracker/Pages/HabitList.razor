@@ -3,14 +3,15 @@
 @inject HttpClient Http
 @inject IJSRuntime JS
 @using HabitTracker.Models
+@using HabitTracker.Loaders
 
 <h3>Habit List</h3>
 
-@if (habits == null)
+@if (isLoading)
 {
-    <p>Loading habits...</p>
+    <LoadingScreen IsVisible="isLoading" />
 }
-else if (!habits.Any())
+else if (habits == null || !habits.Any())
 {
     <p>No habits found.</p>
 }
@@ -46,13 +47,16 @@ else
 @code {
     private List<Habit>? habits;
     [Parameter] public string type { get; set; } = string.Empty;
+    private bool isLoading = true; // ✅ Added loading state
 
     protected override async Task OnParametersSetAsync()
     {
+        isLoading = true; // ✅ Show loading screen
+
         try
         {
             var token = await JS.InvokeAsync<string>("sessionStorage.getItem", "authToken");
-            HttpRequestMessage request;
+
             if (string.IsNullOrEmpty(token))
             {
                 Console.Error.WriteLine("No auth token found.");
@@ -60,13 +64,9 @@ else
                 return;
             }
 
-            if (string.IsNullOrEmpty(type))
-            {
-                request = new HttpRequestMessage(HttpMethod.Get, "api/habits");
-            }
-            else {
-                request = new HttpRequestMessage(HttpMethod.Get, $"api/habits?frequency={type}");
-            }
+            var requestUrl = string.IsNullOrEmpty(type) ? "api/habits" : $"api/habits?frequency={type}";
+
+            var request = new HttpRequestMessage(HttpMethod.Get, requestUrl);
             request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
             var response = await Http.SendAsync(request);
@@ -84,6 +84,10 @@ else
         {
             Console.Error.WriteLine($"Error fetching habits: {ex.Message}");
             habits = new List<Habit>();
+        }
+        finally
+        {
+            isLoading = false; // ✅ Hide loading screen when done
         }
     }
 }
