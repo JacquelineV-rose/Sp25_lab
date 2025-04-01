@@ -1,46 +1,47 @@
 @page "/edithabits/create"
 @inject HttpClient Http
+@inject IJSRuntime JS
 <link href="CreateHabit.razor.css" rel="stylesheet" />
 
 <div class="create-habits">
-<h3>Create Habit</h3>
+    <h3>Create Habit</h3>
 
-<EditForm Model="@newHabit" OnValidSubmit="@HandleValidSubmit">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
+    <EditForm Model="@newHabit" OnValidSubmit="@HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
 
-    <div>
-        <label>Habit Name:</label>
-        <InputText @bind-Value="newHabit.Name" class="form-control" required />
-    </div>
-    
-    <div>
-        <label>Description:</label>
-        <InputTextArea @bind-Value="newHabit.Description" id="description" class="form-control" />
-    </div>
+        <div>
+            <label>Habit Name:</label>
+            <InputText @bind-Value="newHabit.Name" class="form-control" required />
+        </div>
 
-    <div>
-        <label>Start Date:</label>
-        <InputDate @bind-Value="newHabit.StartDate" class="form-control" required />
-    </div>
+        <div>
+            <label>Description:</label>
+            <InputTextArea @bind-Value="newHabit.Description" id="description" class="form-control" />
+        </div>
 
-    <div>
-        <label>End Date:</label>
-        <InputDate @bind-Value="newHabit.EndDate" class="form-control" required />
-    </div>
+        <div>
+            <label>Start Date:</label>
+            <InputDate @bind-Value="newHabit.StartDate" class="form-control" required />
+        </div>
 
-    <div>
-        <label>Frequency:</label>
-        <select @bind="newHabit.Frequency" class="form-control">
-            <option value="Daily">Daily</option>
-            <option value="Weekly">Weekly</option>
-            <option value="Monthly">Monthly</option>
-            <option value="Never">Never</option>
-        </select>
-    </div>
+        <div>
+            <label>End Date:</label>
+            <InputDate @bind-Value="newHabit.EndDate" class="form-control" required />
+        </div>
 
-    <button type="submit" class="btn-primary">Create Habit</button>
-</EditForm>
+        <div>
+            <label>Frequency:</label>
+            <select @bind="newHabit.Frequency" class="form-control">
+                <option value="Daily">Daily</option>
+                <option value="Weekly">Weekly</option>
+                <option value="Monthly">Monthly</option>
+                <option value="Never">Never</option>
+            </select>
+        </div>
+
+        <button type="submit" class="btn-primary">Create Habit</button>
+    </EditForm>
 </div>
 
 @if (!string.IsNullOrEmpty(message))
@@ -49,13 +50,12 @@
 }
 
 @code {
-    private Habit newHabit = new Habit 
-    { 
-        UserID = 1, //default user for right now
+    private Habit newHabit = new Habit
+    {
         StartDate = DateTime.Today,
         EndDate = DateTime.Today,
         Frequency = "Daily"
-    }; 
+    };
 
     private string message = "";
 
@@ -63,11 +63,22 @@
     {
         try
         {
+            var token = await JS.InvokeAsync<string>("sessionStorage.getItem", "authToken");
+
+            if (!string.IsNullOrEmpty(token))
+            {
+                Http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            }
             var response = await Http.PostAsJsonAsync("api/habits", newHabit);
             if (response.IsSuccessStatusCode)
             {
                 message = "Habit created successfully!";
-                newHabit = new Habit { UserID = 1 }; // Reset form
+                newHabit = new Habit
+                {
+                    StartDate = DateTime.Today,
+                    EndDate = DateTime.Today,
+                    Frequency = "Daily"
+                }; // Reset form
             }
             else
             {

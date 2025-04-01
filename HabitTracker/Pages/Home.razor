@@ -1,5 +1,8 @@
 ﻿@page "/"
 @inject HttpClient Http
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+@using HabitTracker.Models;
 
 <h1>Welcome</h1>
 <div class="grid-container">
@@ -89,34 +92,143 @@
     <div class="right-column">
         <div class="motivation-section">
             <h2>Motivation</h2>
-            <!-- Your existing motivation content -->
+            <p>@motivationQuote</p>
+            <button @onclick="ForceRefreshQuote" class="motivation-refresh-btn">
+                <img src="refresh.png" alt="Refresh" />
+            </button>
         </div>
 
         <div class="notes-section">
             <h2>Notes</h2>
-            <!-- Your existing notes content -->
+                        <textarea @bind="noteContent" rows="8" class="form-control"></textarea>
+            <button @onclick="SaveNote" class="btn btn-success mt-2">Save</button>
+            <p>@saveStatus</p>
         </div>
     </div>
 </div>
 
 @code {
-    private List<HabitTracker.Models.Habit> allHabits = new();
-    private List<HabitTracker.Models.Habit> dailyHabits = new();
-    private List<HabitTracker.Models.Habit> weeklyHabits = new();
-    private List<HabitTracker.Models.Habit> monthlyHabits = new();
+    private List<Habit> allHabits = new();
+    private List<Habit> dailyHabits = new();
+    private List<Habit> weeklyHabits = new();
+    private List<Habit> monthlyHabits = new();
+
+    private string noteContent = "";
+    private string saveStatus = "";
+
+    private string motivationQuote = "Loading motivation...";
 
     protected override async Task OnInitializedAsync()
     {
-        try
+        await LoadHabits();
+        await LoadMotivationQuote();
+        await LoadNote();
+    }
+
+    private async Task LoadHabits()
+{
+    try
+    {
+        var token = await JS.InvokeAsync<string>("sessionStorage.getItem", "authToken");
+        if (string.IsNullOrEmpty(token))
         {
-            allHabits = await Http.GetFromJsonAsync<List<HabitTracker.Models.Habit>>("api/habits") ?? new();
+            Console.Error.WriteLine("No auth token found.");
+            return;
+        }
+
+        var request = new HttpRequestMessage(HttpMethod.Get, "api/habits");
+        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+        var response = await Http.SendAsync(request);
+        if (response.IsSuccessStatusCode)
+        {
+            allHabits = await response.Content.ReadFromJsonAsync<List<Habit>>() ?? new();
             dailyHabits = allHabits.Where(h => h.Frequency == "Daily").ToList();
             weeklyHabits = allHabits.Where(h => h.Frequency == "Weekly").ToList();
             monthlyHabits = allHabits.Where(h => h.Frequency == "Monthly").ToList();
         }
+        else
+        {
+            Console.Error.WriteLine($"Failed to load habits: {response.StatusCode}");
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.Error.WriteLine($"Error fetching habits: {ex.Message}");
+    }
+}
+
+    private async Task LoadMotivationQuote()
+    {
+        try
+        {
+            // ✅ Check localStorage for today's quote
+            var storedQuote = await JS.InvokeAsync<string>("localStorage.getItem", "motivationQuote");
+            var storedDate = await JS.InvokeAsync<string>("localStorage.getItem", "motivationDate");
+            var today = DateTime.Now.ToString("yyyy-MM-dd");
+
+            if (!string.IsNullOrEmpty(storedQuote) && storedDate == today)
+            {
+                motivationQuote = storedQuote;
+                return;
+            }
+
+            using var localHttp = new HttpClient { BaseAddress = new Uri(Navigation.BaseUri) };
+            var quotes = await localHttp.GetFromJsonAsync<List<string>>("quotes.json");
+
+            if (quotes != null && quotes.Any())
+            {
+                var rng = new Random();
+                motivationQuote = quotes[rng.Next(quotes.Count)];
+
+                // ✅ Store quote and date in localStorage
+                await JS.InvokeVoidAsync("localStorage.setItem", "motivationQuote", motivationQuote);
+                await JS.InvokeVoidAsync("localStorage.setItem", "motivationDate", today);
+            }
+            else
+            {
+                motivationQuote = "Stay motivated! No quotes available.";
+            }
+        }
         catch (Exception ex)
         {
-            Console.WriteLine($"Failed to fetch habits: {ex.Message}");
+            Console.WriteLine($"Failed to load motivation quotes: {ex.Message}");
+            motivationQuote = "Stay motivated! (Error loading quotes)";
+        }
+    }
+
+    private async Task ForceRefreshQuote()
+    {
+        // ✅ Clear stored quote and force a new one
+        await JS.InvokeVoidAsync("localStorage.removeItem", "motivationQuote");
+        await JS.InvokeVoidAsync("localStorage.removeItem", "motivationDate");
+        await LoadMotivationQuote();
+    }
+
+      private async Task LoadNote()
+    {
+        try
+        {
+            var note = await Http.GetFromJsonAsync<Note>("api/notes");
+            noteContent = note?.Content ?? "";
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Failed to load note: " + ex.Message);
+            noteContent = "";
+        }
+    }
+
+    private async Task SaveNote()
+    {
+        try
+        {
+            var response = await Http.PostAsJsonAsync("api/notes", new Note { Content = noteContent });
+            saveStatus = response.IsSuccessStatusCode ? "Note saved!" : "Failed to save.";
+        }
+        catch (Exception ex)
+        {
+            saveStatus = "Error: " + ex.Message;
         }
     }
 }

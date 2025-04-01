@@ -1,4 +1,4 @@
-@page "/register"
+@page "/LoginRegAuth/register"
 @inject HttpClient Http
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
@@ -17,14 +17,17 @@
 
     <div class="register-container">
         <div>
+            <label>Email:</label>
+            <InputText @bind-Value="RegisterModel.Email" type="email" class="form-control" placeholder="Enter email" />
+        </div>
+
+
+
+        <div>
             <label>Create Username:</label>
             <InputText @bind-Value="RegisterModel.Username" class="form-control" placeholder="Enter username" />
         </div>
 
-        <div>
-            <label>Enter Email:</label>
-            <InputText @bind-Value="RegisterModel.Email" type="email" class="form-control" placeholder="Enter email" />
-        </div>
 
         <div>
             <label>Create Password:</label>
@@ -46,8 +49,8 @@
 
 @code {
     private UserRegisterModel RegisterModel = new();
-    private string ConfirmPassword;
-    private string Message;
+    private string ConfirmPassword = string.Empty;
+    private string Message = string.Empty;
 
     private async Task HandleRegister()
     {
@@ -65,7 +68,7 @@
             {
                 Message = "Registration successful!";
                 await JS.InvokeVoidAsync("sessionStorage.setItem", "authToken", "");
-                Navigation.NavigateTo("/login");
+                Navigation.NavigateTo("/LoginRegAuth/login");
             }
             else
             {

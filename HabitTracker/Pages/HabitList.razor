@@ -1,5 +1,8 @@
+@page "/habitlist/{type}"
 @page "/habitlist"
 @inject HttpClient Http
+@inject IJSRuntime JS
+@using HabitTracker.Models
 
 <h3>Habit List</h3>
 
@@ -42,28 +45,45 @@ else
 
 @code {
     private List<Habit>? habits;
+    [Parameter] public string type { get; set; } = string.Empty;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnParametersSetAsync()
     {
         try
         {
-            habits = await Http.GetFromJsonAsync<List<Habit>>("api/habits");
+            var token = await JS.InvokeAsync<string>("sessionStorage.getItem", "authToken");
+            HttpRequestMessage request;
+            if (string.IsNullOrEmpty(token))
+            {
+                Console.Error.WriteLine("No auth token found.");
+                habits = new List<Habit>();
+                return;
+            }
+
+            if (string.IsNullOrEmpty(type))
+            {
+                request = new HttpRequestMessage(HttpMethod.Get, "api/habits");
+            }
+            else {
+                request = new HttpRequestMessage(HttpMethod.Get, $"api/habits?frequency={type}");
+            }
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+            var response = await Http.SendAsync(request);
+            if (response.IsSuccessStatusCode)
+            {
+                habits = await response.Content.ReadFromJsonAsync<List<Habit>>();
+            }
+            else
+            {
+                Console.Error.WriteLine($"Failed to load habits: {response.StatusCode}");
+                habits = new List<Habit>();
+            }
         }
         catch (Exception ex)
         {
             Console.Error.WriteLine($"Error fetching habits: {ex.Message}");
             habits = new List<Habit>();
         }
-    }
-
-    private class Habit
-    {
-        public int Id { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public string? Description { get; set; }
-        public DateTime StartDate { get; set; }
-        public DateTime EndDate { get; set; }
-        public string Frequency { get; set; } = string.Empty;
-        public bool Completed { get; set; }
     }
 }
