@@ -1,4 +1,4 @@
-@page "/"
+﻿@page "/"
 @inject HttpClient Http
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
@@ -121,7 +121,8 @@
     </div>
 </div>
 
-@code {
+@code 
+{
     private List<Habit> allHabits = new();
     private List<Habit> dailyHabits = new();
     private List<Habit> weeklyHabits = new();
@@ -143,41 +144,41 @@
     }
 
     private async Task LoadHabits()
-{
-    try
     {
-        var token = await JS.InvokeAsync<string>("sessionStorage.getItem", "authToken");
-        if (string.IsNullOrEmpty(token))
+        try
         {
-            Console.Error.WriteLine("No auth token found.");
-            return;
-        }
+            var token = await JS.InvokeAsync<string>("sessionStorage.getItem", "authToken");
+            if (string.IsNullOrEmpty(token))
+            {
+                Console.Error.WriteLine("No auth token found.");
+                return;
+            }
 
-        var request = new HttpRequestMessage(HttpMethod.Get, "api/habits");
-        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            var request = new HttpRequestMessage(HttpMethod.Get, "api/habits");
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
-        var response = await Http.SendAsync(request);
-        if (response.IsSuccessStatusCode)
-        {
-            allHabits = await response.Content.ReadFromJsonAsync<List<Habit>>() ?? new();
-            dailyHabits = allHabits.Where(h => h.Frequency == "Daily").ToList();
-            weeklyHabits = allHabits.Where(h => h.Frequency == "Weekly").ToList();
-            monthlyHabits = allHabits.Where(h => h.Frequency == "Monthly").ToList();
+            var response = await Http.SendAsync(request);
+            if (response.IsSuccessStatusCode)
+            {
+                allHabits = await response.Content.ReadFromJsonAsync<List<Habit>>() ?? new();
+                dailyHabits = allHabits.Where(h => h.Frequency == "Daily").ToList();
+                weeklyHabits = allHabits.Where(h => h.Frequency == "Weekly").ToList();
+                monthlyHabits = allHabits.Where(h => h.Frequency == "Monthly").ToList();
+            }
+            else
+            {
+                Console.Error.WriteLine($"Failed to load habits: {response.StatusCode}");
+            }
         }
-        else
+        catch (Exception ex)
         {
-            Console.Error.WriteLine($"Failed to load habits: {response.StatusCode}");
+            Console.Error.WriteLine($"Error fetching habits: {ex.Message}");
         }
         finally
         {
             isLoadingHabits = false;
         }
     }
-    catch (Exception ex)
-    {
-        Console.Error.WriteLine($"Error fetching habits: {ex.Message}");
-    }
-}
 
     private async Task LoadMotivationQuote()
     {
