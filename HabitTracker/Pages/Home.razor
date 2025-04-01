@@ -136,8 +136,19 @@
     private bool isLoadingMotivation = true;
     private bool isLoadingNote = true;
 
+    private bool isAuthorized = false;
+
     protected override async Task OnInitializedAsync()
     {
+        var token = await JS.InvokeAsync<string>("sessionStorage.getItem", "authToken");
+
+        if (string.IsNullOrEmpty(token))
+        {
+            Navigation.NavigateTo("/LoginRegAuth/login", forceLoad: true);
+            return;
+        }
+
+        isAuthorized = true;
         await LoadHabits();
         await LoadMotivationQuote();
         await LoadNote();
