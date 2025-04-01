@@ -45,11 +45,41 @@
     private int selectedHabitId;
     private bool isLoading = true;
 
+    [Inject] private IJSRuntime? JS { get; set; }
+    [Inject] private NavigationManager? Navigation { get; set; }
     protected override async Task OnInitializedAsync()
     {
-        isLoading = true; 
-        habits = await Http.GetFromJsonAsync<List<Habit>>("api/habits") ?? new List<Habit>();
-        isLoading = false; 
+        isLoading = true;
+
+        var token = await JS!.InvokeAsync<string>("sessionStorage.getItem", "authToken");
+
+        if (string.IsNullOrEmpty(token))
+        {
+            Navigation?.NavigateTo("/LoginRegAuth/login", forceLoad: true);
+            return;
+        }
+
+        try
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, "api/habits");
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            var response = await Http.SendAsync(request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                habits = await response.Content.ReadFromJsonAsync<List<Habit>>() ?? new List<Habit>();
+            }
+            else
+            {
+                Console.WriteLine($"Failed to fetch habits: {response.StatusCode}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error fetching habits: " + ex.Message);
+        }
+
+        isLoading = false;
     }
 
     private bool IsHabitSelected => selectedHabitId > 0;
