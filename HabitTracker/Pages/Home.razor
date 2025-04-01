@@ -11,11 +11,11 @@
             <div class="habits-header">
                 <h1>Daily Habits</h1>
             </div>
-            @if (dailyHabits == null)
+            @if (isLoadingHabits)
             {
-                <p>Loading...</p>
+                <p>Loading habits...</p>
             }
-            else if (!dailyHabits.Any())
+            else if (dailyHabits == null || !dailyHabits.Any())
             {
                 <p>No data available</p>
             }
@@ -38,11 +38,11 @@
             <div class="habits-header">
                 <h1>Weekly Habits</h1>
             </div>
-            @if (weeklyHabits == null)
+            @if (isLoadingHabits)
             {
-                <p>Loading...</p>
+                <p>Loading habits...</p>
             }
-            else if (!weeklyHabits.Any())
+            else if (weeklyHabits == null || !weeklyHabits.Any())
             {
                 <p>No data available</p>
             }
@@ -65,11 +65,11 @@
             <div class="habits-header">
                 <h1>Monthly Habits</h1>
             </div>
-            @if (monthlyHabits == null)
+            @if (isLoadingHabits)
             {
-                <p>Loading...</p>
+                <p>Loading habits...</p>
             }
-            else if (!monthlyHabits.Any())
+            else if (monthlyHabits == null || !monthlyHabits.Any())
             {
                 <p>No data available</p>
             }
@@ -92,7 +92,14 @@
     <div class="right-column">
         <div class="motivation-section">
             <h2>Motivation</h2>
-            <p>@motivationQuote</p>
+            @if (isLoadingMotivation)
+            {
+                <p>Loading quote...</p>
+            }
+            else
+            {
+                <p>@motivationQuote</p>
+            }
             <button @onclick="ForceRefreshQuote" class="motivation-refresh-btn">
                 <img src="refresh.png" alt="Refresh" />
             </button>
@@ -100,14 +107,22 @@
 
         <div class="notes-section">
             <h2>Notes</h2>
-                        <textarea @bind="noteContent" rows="8" class="form-control"></textarea>
-            <button @onclick="SaveNote" class="btn btn-success mt-2">Save</button>
-            <p>@saveStatus</p>
+            @if (isLoadingNote)
+            {
+                <p>Loading note...</p>
+            }
+            else
+            {
+                <textarea @bind="noteContent" rows="8" class="form-control"></textarea>
+                <button @onclick="SaveNote" class="btn btn-success mt-2">Save</button>
+                <p>@saveStatus</p>
+            }
         </div>
     </div>
 </div>
 
-@code {
+@code 
+{
     private List<Habit> allHabits = new();
     private List<Habit> dailyHabits = new();
     private List<Habit> weeklyHabits = new();
@@ -115,8 +130,11 @@
 
     private string noteContent = "";
     private string saveStatus = "";
-
     private string motivationQuote = "Loading motivation...";
+
+    private bool isLoadingHabits = true;
+    private bool isLoadingMotivation = true;
+    private bool isLoadingNote = true;
 
     protected override async Task OnInitializedAsync()
     {
@@ -126,43 +144,46 @@
     }
 
     private async Task LoadHabits()
-{
-    try
     {
-        var token = await JS.InvokeAsync<string>("sessionStorage.getItem", "authToken");
-        if (string.IsNullOrEmpty(token))
+        try
         {
-            Console.Error.WriteLine("No auth token found.");
-            return;
-        }
+            var token = await JS.InvokeAsync<string>("sessionStorage.getItem", "authToken");
+            if (string.IsNullOrEmpty(token))
+            {
+                Console.Error.WriteLine("No auth token found.");
+                return;
+            }
 
-        var request = new HttpRequestMessage(HttpMethod.Get, "api/habits");
-        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            var request = new HttpRequestMessage(HttpMethod.Get, "api/habits");
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
-        var response = await Http.SendAsync(request);
-        if (response.IsSuccessStatusCode)
-        {
-            allHabits = await response.Content.ReadFromJsonAsync<List<Habit>>() ?? new();
-            dailyHabits = allHabits.Where(h => h.Frequency == "Daily").ToList();
-            weeklyHabits = allHabits.Where(h => h.Frequency == "Weekly").ToList();
-            monthlyHabits = allHabits.Where(h => h.Frequency == "Monthly").ToList();
+            var response = await Http.SendAsync(request);
+            if (response.IsSuccessStatusCode)
+            {
+                allHabits = await response.Content.ReadFromJsonAsync<List<Habit>>() ?? new();
+                dailyHabits = allHabits.Where(h => h.Frequency == "Daily").ToList();
+                weeklyHabits = allHabits.Where(h => h.Frequency == "Weekly").ToList();
+                monthlyHabits = allHabits.Where(h => h.Frequency == "Monthly").ToList();
+            }
+            else
+            {
+                Console.Error.WriteLine($"Failed to load habits: {response.StatusCode}");
+            }
         }
-        else
+        catch (Exception ex)
         {
-            Console.Error.WriteLine($"Failed to load habits: {response.StatusCode}");
+            Console.Error.WriteLine($"Error fetching habits: {ex.Message}");
+        }
+        finally
+        {
+            isLoadingHabits = false;
         }
     }
-    catch (Exception ex)
-    {
-        Console.Error.WriteLine($"Error fetching habits: {ex.Message}");
-    }
-}
 
     private async Task LoadMotivationQuote()
     {
         try
         {
-            // ✅ Check localStorage for today's quote
             var storedQuote = await JS.InvokeAsync<string>("localStorage.getItem", "motivationQuote");
             var storedDate = await JS.InvokeAsync<string>("localStorage.getItem", "motivationDate");
             var today = DateTime.Now.ToString("yyyy-MM-dd");
@@ -180,8 +201,6 @@
             {
                 var rng = new Random();
                 motivationQuote = quotes[rng.Next(quotes.Count)];
-
-                // ✅ Store quote and date in localStorage
                 await JS.InvokeVoidAsync("localStorage.setItem", "motivationQuote", motivationQuote);
                 await JS.InvokeVoidAsync("localStorage.setItem", "motivationDate", today);
             }
@@ -195,15 +214,19 @@
             Console.WriteLine($"Failed to load motivation quotes: {ex.Message}");
             motivationQuote = "Stay motivated! (Error loading quotes)";
         }
+        finally
+        {
+            isLoadingMotivation = false;
+        }
     }
 
     private async Task ForceRefreshQuote()
     {
-        // ✅ Clear stored quote and force a new one
         await JS.InvokeVoidAsync("localStorage.removeItem", "motivationQuote");
         await JS.InvokeVoidAsync("localStorage.removeItem", "motivationDate");
         await LoadMotivationQuote();
     }
+
 
       private async Task LoadNote()
     {
@@ -216,6 +239,10 @@
         {
             Console.WriteLine("Failed to load note: " + ex.Message);
             noteContent = "";
+        }
+        finally
+        {
+            isLoadingNote = false;
         }
     }
 
