@@ -68,7 +68,7 @@ namespace HabitTrackerAPI.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteHabit(int id)
         {
-            var userId = int.Parse(User.FindFirst("UserID")!.Value);
+            var userId = int.Parse(User.FindFirst("UserId")!.Value);
             var habit = await _context.Habits.FirstOrDefaultAsync(h => h.Id == id && h.UserID == userId);
             if (habit == null)
             {
@@ -84,7 +84,7 @@ namespace HabitTrackerAPI.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateHabit(int id, Habit habit)
         {
-            var userId = int.Parse(User.FindFirst("UserID")!.Value);
+            var userId = int.Parse(User.FindFirst("UserId")!.Value);
             if (id != habit.Id || habit.UserID != userId)
             {
                 return BadRequest();

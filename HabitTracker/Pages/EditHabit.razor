@@ -1,5 +1,6 @@
 @page "/edithabits/edit"
 @inject HttpClient Http
+@inject IJSRuntime JS
 @using HabitTracker.Models
 @using HabitTracker.Loaders
 
@@ -93,9 +94,31 @@ else
 
     private async Task LoadHabits()
     {
+        isLoading = true;
+      
         try
         {
-            habits = await Http.GetFromJsonAsync<List<Habit>>("api/habits") ?? new List<Habit>();
+            var token = await JS.InvokeAsync<string>("sessionStorage.getItem", "authToken");
+            if (string.IsNullOrEmpty(token))
+            {
+                Console.Error.WriteLine("No auth token found.");
+                habits = new List<Habit>();
+                return;
+            }
+
+            var request = new HttpRequestMessage(HttpMethod.Get, "api/habits");
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+            var response = await Http.SendAsync(request);
+            if (response.IsSuccessStatusCode)
+            {
+                habits = await response.Content.ReadFromJsonAsync<List<Habit>>() ?? new List<Habit>();
+            }
+            else
+            {
+                Console.Error.WriteLine($"Failed to load habits: {response.StatusCode}");
+                habits = new List<Habit>();
+            }
         }
         catch (Exception ex)
         {
@@ -126,24 +149,38 @@ else
 
     private async Task SaveHabit()
     {
-        if (selectedHabit != null)
-        {
-            isLoading = true;
+        if (selectedHabit == null) return;
 
-            try
+        isLoading = true;
+
+        try
+        {
+            var token = await JS.InvokeAsync<string>("sessionStorage.getItem", "authToken");
+
+            var request = new HttpRequestMessage(HttpMethod.Put, $"api/habits/{selectedHabit.Id}")
             {
-                await Http.PutAsJsonAsync($"api/habits/{selectedHabit.Id}", selectedHabit);
+                Content = JsonContent.Create(selectedHabit)
+            };
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+            var response = await Http.SendAsync(request);
+            if (response.IsSuccessStatusCode)
+            {
                 await LoadHabits();
                 selectedHabit = null;
             }
-            catch (Exception ex)
+            else
             {
-                Console.WriteLine($"Error saving habit: {ex.Message}");
+                Console.Error.WriteLine($"Failed to save habit: {response.StatusCode}");
             }
-            finally
-            {
-                isLoading = false;
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error saving habit: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
         }
     }
 }
